@@ -28,13 +28,40 @@ commit;
 
 /*машины задействованные в дтп*/
 begin;
-    select vehicle.model ,vehicle.pts from (select * from dtp where id = 2 ) as d
+    select vehicle.model ,vehicle.pts from (select * from dtp where id = 1 ) as d
     join participant_of_dtp on  participant_of_dtp.dtp_id = d.id
     join person on person.id = participant_of_dtp.person_id
     join person_vehicle on person_vehicle.person_id = person.id
     join  vehicle on person_vehicle.vehicle_id = vehicle.id;
 commit;
+/*добавить машину*/
+begin;
+insert into vehicle ( pts, model, category)  values('asd','asd','asd') returning id;
+commit;
+/*добавить пользователя*/
+begin;
+insert into person (name, surname, patronymic, birthday, passport, citizenship)
+values ('asd','asd','asd',now(),1111,'asd')
+returning id;
+commit;
 
+/*добавить сотрудника дпс*/
+begin;
+insert into police_officer (rank, person_id)
+values ('asd',1)
+    returning id;
+commit;
+/*добавить взвод*/
+begin;
+    insert into crew (p_officer_id_1,p_officer_id_2,gai_id,time,duty)
+    values (1,2,1,now(),false)
+commit;
+/*добавить гаи*/
+begin;
+insert into gai (area, metro)
+values ('a','a')
+returning id;
+    commit;
 /*добавить участника дтп*/
 begin;
     select id from violation  where law_number = ?;
