@@ -2,10 +2,8 @@ package main
 
 import (
 	"TgDbMai/config"
-	"TgDbMai/internal/keyboard"
-	"TgDbMai/internal/query_handlers"
-
 	"TgDbMai/internal/psql"
+	"TgDbMai/internal/query_handlers"
 
 	tgbotapi "github.com/go-telegram/bot"
 	"github.com/go-telegram/bot/models"
@@ -18,6 +16,13 @@ import (
 	"gorm.io/gorm/logger"
 	"os"
 	"os/signal"
+)
+
+const (
+	GaiPattern      = "gai_"
+	GaishnikPattern = "gaishnik_"
+	MainPattern     = "main_"
+	BackPattern     = "back_"
 )
 
 func main() {
@@ -54,27 +59,9 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	bot.RegisterHandler(tgbotapi.HandlerTypeMessageText, "/start", tgbotapi.MatchTypeExact, helloHandler)
-	bot.RegisterHandler(tgbotapi.HandlerTypeCallbackQueryData, "main_", tgbotapi.MatchTypePrefix, query_handlers.Main)
-	bot.RegisterHandler(tgbotapi.HandlerTypeCallbackQueryData, "gai_", tgbotapi.MatchTypePrefix, query_handlers.Gai)
-	bot.RegisterHandler(tgbotapi.HandlerTypeCallbackQueryData, "gaishnik_", tgbotapi.MatchTypePrefix, query_handlers.Gaishnik)
 
-	bot.RegisterHandler(tgbotapi.HandlerTypeCallbackQueryData, "back_", tgbotapi.MatchTypePrefix, query_handlers.Back)
-	//
-	//bot.RegisterHandler(tgbotapi.HandlerTypeCallbackQueryData, "gai", tgbotapi.MatchTypePrefix, callbackHandler)
-	//bot.RegisterHandler(tgbotapi.HandlerTypeCallbackQueryData, "gagaishniki", tgbotapi.MatchTypePrefix, callbackHandler)
-
-	//bot.RegisterHandler(tgbotapi.HandlerTypeCallbackQueryData, "dtp", tgbotapi.MatchTypePrefix, handlers.Dtp)
-
+	query_handlers.New(bot)
 	bot.Start(ctx)
-}
-
-func helloHandler(ctx context.Context, b *tgbotapi.Bot, update *models.Update) {
-	b.SendMessage(ctx, &tgbotapi.SendMessageParams{
-		ChatID:      update.Message.Chat.ID,
-		Text:        "Выберите",
-		ReplyMarkup: keyboard.Main(),
-	})
 }
 
 func handler(ctx context.Context, b *tgbotapi.Bot, update *models.Update) {

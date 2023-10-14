@@ -1,36 +1,51 @@
 package keyboard
 
 import (
-	"fmt"
 	"github.com/go-telegram/bot/models"
 	"strconv"
+	"sync"
 )
 
 const (
-	CheckVehicleOwnerKey = int(iota)
+	_ = int(iota)
 	AddDtpParticipantKey
 	CheckVehicleKey
 )
 
-func Gaishnik() *models.InlineKeyboardMarkup {
-	fmt.Println("gaishnik_"+strconv.Itoa(CheckVehicleOwnerKey),
-		"gaishnik_"+strconv.Itoa(AddDtpParticipantKey),
-		"gaishnik_"+strconv.Itoa(CheckVehicleKey))
+var gaishniknstance Gaishnik = Gaishnik{}
+var oncegaishnik sync.Once
+
+type Gaishnik struct {
+	Keyboard
+}
+
+func NewGaishnik(pattern string) KeyboardI {
+
+	oncegaishnik.Do(func() {
+		gaishniknstance = Gaishnik{Keyboard{Pattern: pattern}}
+	})
+
+	return gaishniknstance
+}
+func (g Gaishnik) CallbackData(key int) string {
+	return g.Pattern + strconv.Itoa(key)
+
+}
+func (g Gaishnik) Markup() *models.InlineKeyboardMarkup {
+
 	kb := &models.InlineKeyboardMarkup{
 		InlineKeyboard: [][]models.InlineKeyboardButton{
 			{
-				{Text: "Проверить владельца автомобиля", CallbackData: "gaishnik_" + strconv.Itoa(CheckVehicleOwnerKey)},
-			}, {
-				{Text: "Добавить участника дтп", CallbackData: "gaishnik_" + strconv.Itoa(AddDtpParticipantKey)},
+				{Text: "Добавить участника дтп", CallbackData: g.CallbackData(AddDtpParticipantKey)},
 			},
 			{
-				{Text: "Проверить автомобиль", CallbackData: "gaishnik_" + strconv.Itoa(CheckVehicleKey)},
+				{Text: "Проверить автомобиль", CallbackData: g.CallbackData(CheckVehicleKey)},
 			},
 			//{
 			//	{Text: "Выписать штраф", CallbackData: "gaishnik_"+string(CheckVehicle)},
 			//},
 			{
-				{Text: "Назад", CallbackData: "back_" + strconv.Itoa(BackToMainKey)},
+				{Text: "Назад", CallbackData: BackCallbackData(BackToMainKey)},
 			},
 		},
 	}
