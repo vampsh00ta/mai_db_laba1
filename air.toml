@@ -3,7 +3,7 @@ tmp_dir = "tmp"
 
 [build]
 # Just plain old shell command. You could use `make` as well.
-cmd = "go build -o ./tmp/main ./cmd/tgdbmai/"
+cmd = "go build -o ./tmp/main ./cmd/avito/"
 # Binary file yields from `cmd`.
 bin = "main"
 # Customize binary.

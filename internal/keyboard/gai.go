@@ -12,26 +12,19 @@ const (
 	_
 )
 
-var gainstance Gai = Gai{}
+var gainstance gai = gai{}
 var oncegai sync.Once
 
-type Gai struct {
+type gai struct {
 	Keyboard
 }
 
-func NewGai(pattern string) KeyboardI {
-
-	oncegai.Do(func() {
-		gainstance = Gai{Keyboard{Pattern: pattern}}
-	})
-	return gainstance
-}
-func (g Gai) CallbackData(key int) string {
+func (g gai) CallbackData(key int) string {
 	return g.Pattern + strconv.Itoa(key)
 
 }
 
-func (g Gai) Markup() *models.InlineKeyboardMarkup {
+func (g gai) Markup() *models.InlineKeyboardMarkup {
 	kb := &models.InlineKeyboardMarkup{
 		InlineKeyboard: [][]models.InlineKeyboardButton{
 			{
@@ -48,4 +41,12 @@ func (g Gai) Markup() *models.InlineKeyboardMarkup {
 		},
 	}
 	return kb
+}
+
+func Gai(pattern string) KeyboardI {
+
+	oncegai.Do(func() {
+		gainstance = gai{Keyboard{Pattern: pattern}}
+	})
+	return gainstance
 }

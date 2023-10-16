@@ -1,6 +1,7 @@
 package keyboard
 
 import (
+	"TgDbMai/internal/psql"
 	"github.com/go-telegram/bot/models"
 	"strconv"
 	"sync"
@@ -12,26 +13,18 @@ const (
 	CheckVehicleKey
 )
 
-var gaishniknstance Gaishnik = Gaishnik{}
+var gaishniknstance gaishnik = gaishnik{}
 var oncegaishnik sync.Once
 
-type Gaishnik struct {
+type gaishnik struct {
 	Keyboard
 }
 
-func NewGaishnik(pattern string) KeyboardI {
-
-	oncegaishnik.Do(func() {
-		gaishniknstance = Gaishnik{Keyboard{Pattern: pattern}}
-	})
-
-	return gaishniknstance
-}
-func (g Gaishnik) CallbackData(key int) string {
+func (g gaishnik) CallbackData(key int) string {
 	return g.Pattern + strconv.Itoa(key)
 
 }
-func (g Gaishnik) Markup() *models.InlineKeyboardMarkup {
+func (g gaishnik) Markup() *models.InlineKeyboardMarkup {
 
 	kb := &models.InlineKeyboardMarkup{
 		InlineKeyboard: [][]models.InlineKeyboardButton{
@@ -50,4 +43,48 @@ func (g Gaishnik) Markup() *models.InlineKeyboardMarkup {
 		},
 	}
 	return kb
+}
+func VehicleDpts(dtps []*psql.Dtp) *models.InlineKeyboardMarkup {
+
+	kb := &models.InlineKeyboardMarkup{
+		InlineKeyboard: [][]models.InlineKeyboardButton{
+			{
+				{Text: "Id", CallbackData: ""},
+				{Text: "Метро", CallbackData: ""},
+				{Text: "Координаты", CallbackData: ""},
+				{Text: "Улица", CallbackData: ""},
+				{Text: "Время", CallbackData: ""},
+			},
+		},
+	}
+	for _, dtp := range dtps {
+		res := []models.InlineKeyboardButton{
+			{
+				Text: string(dtp.Id),
+			},
+			{
+				Text: dtp.Metro,
+			},
+			{
+				Text: dtp.Coords,
+			},
+			{
+				Text: dtp.Street,
+			},
+			{
+				Text: dtp.Date.String(),
+			},
+		}
+		kb.InlineKeyboard = append(kb.InlineKeyboard, res)
+	}
+	return kb
+}
+
+func Gaishnik(pattern string) KeyboardI {
+
+	oncegaishnik.Do(func() {
+		gaishniknstance = gaishnik{Keyboard{Pattern: pattern}}
+	})
+
+	return gaishniknstance
 }

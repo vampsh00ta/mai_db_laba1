@@ -9,15 +9,21 @@ type Repository interface {
 	DtpRepository
 	//PersonI
 	VehicleRepository
+	GetDb() *gorm.DB
 }
 
 type Db struct {
-	gorm.DB
+	*gorm.DB
 	logger *slog.Logger
 }
 
+func (db Db) GetDb() *gorm.DB {
+	return db.DB
+}
+
 func New(db *gorm.DB, logger *slog.Logger) Repository {
+
 	return &Db{
-		DB:     *db,
+		DB:     db,
 		logger: logger}
 }

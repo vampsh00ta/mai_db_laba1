@@ -19,6 +19,7 @@ type ParticipantOfDtp struct {
 	ViolationId int       `json:"violation_id" db:"violation_id" gorm:"index"`
 	Violation   Violation `gorm:"foreignKey:id;references:violation_id"`
 	Role        string    `json:"role" db:"role"`
+	Dtp         *Dtp
 }
 
 func (ParticipantOfDtp) TableName() string {
@@ -108,14 +109,15 @@ func (PoliceOfficer) TableName() string {
 }
 
 type Person struct {
-	Id          int        `json:"id" db:"id,omitempty" gorm:"primaryKey"`
-	Name        string     `json:"name" db:"name" `
-	Surname     string     `json:"surname" db:"surname" `
-	Patronymic  string     `json:"patronymic" db:"patronymic" `
-	Birthday    time.Time  `json:"birthday" db:"birthday"`
-	Passport    int        `json:"passport" db:"passport"`
-	Citizenship string     `json:"citizenship" db:"citizenship"`
-	Vehicles    []*Vehicle `gorm:"many2many:person_vehicle;"`
+	Id                int        `json:"id" db:"id,omitempty" gorm:"primaryKey"`
+	Name              string     `json:"name" db:"name" `
+	Surname           string     `json:"surname" db:"surname" `
+	Patronymic        string     `json:"patronymic" db:"patronymic" `
+	Birthday          time.Time  `json:"birthday" db:"birthday"`
+	Passport          int        `json:"passport" db:"passport"`
+	Citizenship       string     `json:"citizenship" db:"citizenship"`
+	Vehicles          []*Vehicle `gorm:"many2many:person_vehicle;"`
+	ParticipantsOfDtp []*ParticipantOfDtp
 }
 
 func (Person) TableName() string {

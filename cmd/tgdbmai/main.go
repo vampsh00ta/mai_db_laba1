@@ -4,6 +4,8 @@ import (
 	"TgDbMai/config"
 	"TgDbMai/internal/psql"
 	"TgDbMai/internal/query_handlers"
+	"TgDbMai/internal/service"
+	"TgDbMai/internal/step_handlers"
 
 	tgbotapi "github.com/go-telegram/bot"
 	"github.com/go-telegram/bot/models"
@@ -50,7 +52,8 @@ func main() {
 		panic(err)
 	}
 	rep := psql.New(db, logger)
-	rep = rep
+	srvc := service.New(rep)
+	stepH := step_handlers.New(srvc)
 	opts := []tgbotapi.Option{
 		tgbotapi.WithDefaultHandler(handler),
 	}
@@ -59,9 +62,9 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-
-	query_handlers.New(bot)
-	bot.Start(ctx)
+	botHandler := query_handlers.New(stepH, bot)
+	botHandler.Init()
+	botHandler.Bot.Start(ctx)
 }
 
 func handler(ctx context.Context, b *tgbotapi.Bot, update *models.Update) {

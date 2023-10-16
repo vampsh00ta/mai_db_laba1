@@ -13,25 +13,18 @@ const (
 
 const ()
 
-type Main struct {
+type main struct {
 	Keyboard
 }
 
-var mainiknstance Main = Main{}
+var mainiknstance main = main{}
 var oncemain sync.Once
 
-func NewMain(pattern string) KeyboardI {
-	oncemain.Do(func() {
-		mainiknstance = Main{Keyboard{Pattern: pattern}}
-	})
-
-	return mainiknstance
-}
-func (m Main) CallbackData(key int) string {
+func (m main) CallbackData(key int) string {
 	return m.Pattern + strconv.Itoa(key)
 
 }
-func (m Main) Markup() *models.InlineKeyboardMarkup {
+func (m main) Markup() *models.InlineKeyboardMarkup {
 
 	kb := &models.InlineKeyboardMarkup{
 		InlineKeyboard: [][]models.InlineKeyboardButton{
@@ -43,4 +36,12 @@ func (m Main) Markup() *models.InlineKeyboardMarkup {
 		},
 	}
 	return kb
+}
+
+func Main(pattern string) KeyboardI {
+	oncemain.Do(func() {
+		mainiknstance = main{Keyboard{Pattern: pattern}}
+	})
+
+	return mainiknstance
 }

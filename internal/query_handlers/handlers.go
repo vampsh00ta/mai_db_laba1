@@ -1,8 +1,9 @@
 package query_handlers
 
 import (
-	"TgDbMai/internal/handler"
+	//"TgDbMai/internal/handler"
 	"TgDbMai/internal/keyboard"
+	"TgDbMai/internal/step_handlers"
 	"context"
 	"fmt"
 	tgbotapi "github.com/go-telegram/bot"
@@ -10,14 +11,19 @@ import (
 	"strconv"
 )
 
-func NewStart(ctx context.Context, b *tgbotapi.Bot, update *models.Update) {
+type BotHandler struct {
+	step *step_handlers.StepHandler
+	*tgbotapi.Bot
+}
+
+func (b BotHandler) Start(ctx context.Context, _ *tgbotapi.Bot, update *models.Update) {
 	b.SendMessage(ctx, &tgbotapi.SendMessageParams{
 		ChatID:      update.Message.Chat.ID,
 		Text:        "Выберите",
-		ReplyMarkup: keyboard.NewMain("").Markup(),
+		ReplyMarkup: keyboard.Main("").Markup(),
 	})
 }
-func NewBack(pattern string) tgbotapi.HandlerFunc {
+func (b BotHandler) Back(pattern string) tgbotapi.HandlerFunc {
 	return func(ctx context.Context, b *tgbotapi.Bot, update *models.Update) {
 		b.AnswerCallbackQuery(ctx, &tgbotapi.AnswerCallbackQueryParams{
 			CallbackQueryID: update.CallbackQuery.ID,
@@ -28,20 +34,21 @@ func NewBack(pattern string) tgbotapi.HandlerFunc {
 			b.EditMessageReplyMarkup(ctx, &tgbotapi.EditMessageReplyMarkupParams{
 				ChatID:      update.CallbackQuery.Message.Chat.ID,
 				MessageID:   update.CallbackQuery.Message.ID,
-				ReplyMarkup: keyboard.NewMain("").Markup(),
+				ReplyMarkup: keyboard.Main("").Markup(),
 			})
 		case "back_" + strconv.Itoa(keyboard.BackToGaishnikKey):
 			b.EditMessageReplyMarkup(ctx, &tgbotapi.EditMessageReplyMarkupParams{
 				ChatID:      update.CallbackQuery.Message.Chat.ID,
 				MessageID:   update.CallbackQuery.Message.ID,
-				ReplyMarkup: keyboard.NewGaishnik("").Markup(),
+				ReplyMarkup: keyboard.Gaishnik("").Markup(),
 			})
 
 		}
 	}
 }
-func NewGai(pattern string) tgbotapi.HandlerFunc {
-	kb := keyboard.NewGai(pattern)
+func (b BotHandler) Gai(pattern string) tgbotapi.HandlerFunc {
+	kb := keyboard.Gai(pattern)
+	sh := b.step
 	return func(ctx context.Context, b *tgbotapi.Bot, update *models.Update) {
 		b.AnswerCallbackQuery(ctx, &tgbotapi.AnswerCallbackQueryParams{
 			CallbackQueryID: update.CallbackQuery.ID,
@@ -50,7 +57,7 @@ func NewGai(pattern string) tgbotapi.HandlerFunc {
 
 		switch update.CallbackQuery.Data {
 		case kb.CallbackData(keyboard.RegDtpKey):
-			handler.Dtp(ctx, b, update)
+			sh.Dtp(ctx, b, update)
 		case kb.CallbackData(keyboard.RegVehicleKey):
 			fmt.Printf(kb.CallbackData(keyboard.RegVehicleKey))
 		case kb.CallbackData(keyboard.BackToMainKey):
@@ -58,8 +65,8 @@ func NewGai(pattern string) tgbotapi.HandlerFunc {
 		}
 	}
 }
-func NewGaishnik(pattern string) tgbotapi.HandlerFunc {
-	kb := keyboard.NewGaishnik(pattern)
+func (b BotHandler) Gaishnik(pattern string) tgbotapi.HandlerFunc {
+	kb := keyboard.Gaishnik(pattern)
 	return func(ctx context.Context, b *tgbotapi.Bot, update *models.Update) {
 		b.AnswerCallbackQuery(ctx, &tgbotapi.AnswerCallbackQueryParams{
 			CallbackQueryID: update.CallbackQuery.ID,
@@ -76,14 +83,14 @@ func NewGaishnik(pattern string) tgbotapi.HandlerFunc {
 			b.EditMessageReplyMarkup(ctx, &tgbotapi.EditMessageReplyMarkupParams{
 				ChatID:      update.CallbackQuery.Message.Chat.ID,
 				MessageID:   update.CallbackQuery.Message.ID,
-				ReplyMarkup: keyboard.NewCheckVehicle("").Markup(),
+				ReplyMarkup: keyboard.CheckVehicle("").Markup(),
 			})
 
 		}
 	}
 }
-func NewMain(pattern string) tgbotapi.HandlerFunc {
-	kb := keyboard.NewMain(pattern)
+func (b BotHandler) Main(pattern string) tgbotapi.HandlerFunc {
+	kb := keyboard.Main(pattern)
 	return func(ctx context.Context, b *tgbotapi.Bot, update *models.Update) {
 		b.AnswerCallbackQuery(ctx, &tgbotapi.AnswerCallbackQueryParams{
 			CallbackQueryID: update.CallbackQuery.ID,
@@ -94,20 +101,20 @@ func NewMain(pattern string) tgbotapi.HandlerFunc {
 			b.EditMessageReplyMarkup(ctx, &tgbotapi.EditMessageReplyMarkupParams{
 				ChatID:      update.CallbackQuery.Message.Chat.ID,
 				MessageID:   update.CallbackQuery.Message.ID,
-				ReplyMarkup: keyboard.NewGai("").Markup(),
+				ReplyMarkup: keyboard.Gai("").Markup(),
 			})
 		case kb.CallbackData(keyboard.GaishnikKey):
 			b.EditMessageReplyMarkup(ctx, &tgbotapi.EditMessageReplyMarkupParams{
 				ChatID:      update.CallbackQuery.Message.Chat.ID,
 				MessageID:   update.CallbackQuery.Message.ID,
-				ReplyMarkup: keyboard.NewGaishnik("").Markup(),
+				ReplyMarkup: keyboard.Gaishnik("").Markup(),
 			})
 		}
 	}
 }
-func NewVehicle(pattern string) tgbotapi.HandlerFunc {
-	kb := keyboard.NewCheckVehicle(pattern)
-
+func (b BotHandler) CheckVehicle(pattern string) tgbotapi.HandlerFunc {
+	kb := keyboard.CheckVehicle(pattern)
+	sh := b.step
 	return func(ctx context.Context, b *tgbotapi.Bot, update *models.Update) {
 		b.AnswerCallbackQuery(ctx, &tgbotapi.AnswerCallbackQueryParams{
 			CallbackQueryID: update.CallbackQuery.ID,
@@ -119,10 +126,10 @@ func NewVehicle(pattern string) tgbotapi.HandlerFunc {
 		})
 		switch update.CallbackQuery.Data {
 		case kb.CallbackData(keyboard.CheckVehicleDtpsKey):
-			fmt.Printf(strconv.Itoa(keyboard.CheckVehicleDtpsKey))
+			sh.CheckVehicle(ctx, b, update)
 
 		case kb.CallbackData(keyboard.CheckVehicleOwnerKey):
-			fmt.Printf(strconv.Itoa(keyboard.CheckVehicleOwnerKey))
+			sh.CheckVehicleOwners(ctx, b, update)
 
 		}
 	}

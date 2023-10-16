@@ -9,26 +9,20 @@ import (
 const (
 	CheckVehicleDtpsKey = iota
 	CheckVehicleOwnerKey
+	CheckVehicleInfoByPts
 )
 
-var checkVehicleInstance = CheckVehicle{}
+var checkVehicleInstance = checkVehicle{}
 var checkVehicleOnce sync.Once
 
-func NewCheckVehicle(pattern string) KeyboardI {
-	checkVehicleOnce.Do(func() {
-		checkVehicleInstance = CheckVehicle{Keyboard{Pattern: pattern}}
-	})
-	return checkVehicleInstance
-}
-
-type CheckVehicle struct {
+type checkVehicle struct {
 	Keyboard
 }
 
-func (c CheckVehicle) CallbackData(key int) string {
+func (c checkVehicle) CallbackData(key int) string {
 	return c.Pattern + strconv.Itoa(key)
 }
-func (c CheckVehicle) Markup() *models.InlineKeyboardMarkup {
+func (c checkVehicle) Markup() *models.InlineKeyboardMarkup {
 	kb := &models.InlineKeyboardMarkup{
 		InlineKeyboard: [][]models.InlineKeyboardButton{
 			{
@@ -36,13 +30,20 @@ func (c CheckVehicle) Markup() *models.InlineKeyboardMarkup {
 			}, {
 				{Text: "Владелец автомобиля", CallbackData: c.CallbackData(CheckVehicleOwnerKey)},
 			},
-			//{
-			//	{Text: "Проверить автомобиль", CallbackData: "gai_" + strconv.Itoa(CheckVehicleKey)},
-			//},
+			{
+				{Text: "Информация автомобиля по его номеру", CallbackData: c.CallbackData(CheckVehicleInfoByPts)},
+			},
 			{
 				{Text: "Назад", CallbackData: "back_" + strconv.Itoa(BackToGaishnikKey)},
 			},
 		},
 	}
 	return kb
+}
+
+func CheckVehicle(pattern string) KeyboardI {
+	checkVehicleOnce.Do(func() {
+		checkVehicleInstance = checkVehicle{Keyboard{Pattern: pattern}}
+	})
+	return checkVehicleInstance
 }
