@@ -2,8 +2,6 @@ package keyboard
 
 import (
 	"github.com/go-telegram/bot/models"
-	"strconv"
-	"sync"
 )
 
 const (
@@ -11,42 +9,26 @@ const (
 	RegVehicleKey
 	_
 )
+const (
+	DtpHappenCommand  = "Случилось дтп"
+	RegVehicleCommand = "Зарегистрировать автомобиль"
+)
 
-var gainstance gai = gai{}
-var oncegai sync.Once
-
-type gai struct {
-	Keyboard
-}
-
-func (g gai) CallbackData(key int) string {
-	return g.Pattern + strconv.Itoa(key)
-
-}
-
-func (g gai) Markup() *models.InlineKeyboardMarkup {
-	kb := &models.InlineKeyboardMarkup{
-		InlineKeyboard: [][]models.InlineKeyboardButton{
+func Gai() *models.ReplyKeyboardMarkup {
+	kb := &models.ReplyKeyboardMarkup{
+		Keyboard: [][]models.KeyboardButton{
 			{
-				{Text: "Случилось дтп", CallbackData: g.CallbackData(RegDtpKey)},
+				{Text: DtpHappenCommand},
 			}, {
-				{Text: "Зарегистрировать автомобиль", CallbackData: g.CallbackData(RegVehicleKey)},
+				{Text: RegVehicleCommand},
 			},
 			{
-				{Text: "Проверить автомобиль", CallbackData: g.CallbackData(CheckVehicleKey)},
+				{Text: CheckVehicleCommand},
 			},
 			{
-				{Text: "Назад", CallbackData: BackCallbackData(BackToMainKey)},
+				{Text: BackCommand},
 			},
 		},
 	}
 	return kb
-}
-
-func Gai(pattern string) KeyboardI {
-
-	oncegai.Do(func() {
-		gainstance = gai{Keyboard{Pattern: pattern}}
-	})
-	return gainstance
 }

@@ -9,12 +9,9 @@ import (
 )
 
 func (sh StepHandler) Dtp(ctx context.Context, bot *tgbotapi.Bot, update *models.Update) {
-	bot.AnswerCallbackQuery(ctx, &tgbotapi.AnswerCallbackQueryParams{
-		CallbackQueryID: update.CallbackQuery.ID,
-		ShowAlert:       false,
-	})
+
 	bot.SendMessage(ctx, &tgbotapi.SendMessageParams{
-		ChatID: update.CallbackQuery.Message.Chat.ID,
+		ChatID: update.Message.Chat.ID,
 		Text:   "Введите район дтп",
 	})
 	bot.RegisterStepHandler(ctx, update, sh.dtpArea, psql.Dtp{})

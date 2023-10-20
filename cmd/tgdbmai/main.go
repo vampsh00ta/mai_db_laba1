@@ -20,13 +20,6 @@ import (
 	"os/signal"
 )
 
-const (
-	GaiPattern      = "gai_"
-	GaishnikPattern = "gaishnik_"
-	MainPattern     = "main_"
-	BackPattern     = "back_"
-)
-
 func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
@@ -62,9 +55,9 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	botHandler := query_handlers.New(stepH, bot)
-	botHandler.Init()
-	botHandler.Bot.Start(ctx)
+	query_handlers.New(bot, stepH)
+	bot.Start(ctx)
+
 }
 
 func handler(ctx context.Context, b *tgbotapi.Bot, update *models.Update) {
