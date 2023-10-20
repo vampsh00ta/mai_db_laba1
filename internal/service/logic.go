@@ -11,6 +11,7 @@ type Service interface {
 	AddDtpDescription(dtpId int, text string) (*psql.DtpDescription, error)
 	GetVehicleByPts(pts string) (*psql.Vehicle, error)
 	GetVehicleOwners(pts string) ([]*psql.Person, error)
+	Spravki
 }
 
 func (s service) RegDtp(dtp *psql.Dtp) (int, error) {

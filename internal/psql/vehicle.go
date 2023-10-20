@@ -8,7 +8,7 @@ import (
 
 type VehicleRepository interface {
 	GetVehicleByPts(tx *gorm.DB, pts string) (*Vehicle, error)
-	GetVehicleDptsByPts(tx *gorm.DB, pts string) ([]*Dtp, error)
+	GetVehicleDptsByPts(tx *gorm.DB, pts ...string) ([]*Dtp, error)
 	RegisterVehicle(tx *gorm.DB, passport int, vehicle *Vehicle) error
 	GetVehicleOwners(tx *gorm.DB, pts string) ([]*Person, error)
 	DeleteVechilesFromPerson(tx *gorm.DB, passport int, vehicle []*Vehicle) error
@@ -84,14 +84,22 @@ func (db Db) DeleteVechilesFromPerson(tx *gorm.DB, passport int, vehicle []*Vehi
 	return nil
 }
 
-func (db Db) GetVehicleDptsByPts(tx *gorm.DB, pts string) ([]*Dtp, error) {
+func (db Db) GetVehicleDptsByPts(tx *gorm.DB, pts ...string) ([]*Dtp, error) {
 	var dtps []*Dtp
+	inPts := "("
+	ptsAny := []any{}
+	for _, a := range pts {
+
+		inPts += "?,"
+		ptsAny = append(ptsAny, a)
+	}
+	inPts = inPts[0:len(inPts)-1] + ")"
 	err := tx.Raw(`select dtp.id,dtp.date,dtp.category
-		from (select * from vehicle where pts = ?) as vehicle
+		from (select * from vehicle where pts in `+inPts+`) as vehicle
 		join person_vehicle on vehicle.id = person_vehicle.vehicle_id
 		join person on person.id = person_vehicle.person_id 
 		join participant_of_dtp on participant_of_dtp.person_id = person.id
-		join dtp on dtp.id = participant_of_dtp.dtp_id`, pts).
+		join dtp on dtp.id = participant_of_dtp.dtp_id`, ptsAny...).
 		Find(&dtps).Error
 	if err != nil {
 		description := fmt.Sprintf("repository:GetVehicleByPts: %s", err.Error())

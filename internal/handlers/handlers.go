@@ -20,6 +20,7 @@ func New(bot *tgbotapi.Bot, step *step_handlers.StepHandler) {
 	NewGaishnik(bot, botHandler)
 	NewGai(bot, botHandler)
 	NewCheckVehicle(bot, botHandler)
+	NewSpravki(bot, botHandler)
 	bot.RegisterHandler(tgbotapi.HandlerTypeMessageText,
 		"/start", tgbotapi.MatchTypeExact, Start())
 	bot.RegisterHandler(tgbotapi.HandlerTypeMessageText,

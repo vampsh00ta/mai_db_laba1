@@ -7,7 +7,7 @@ import (
 
 type Repository interface {
 	DtpRepository
-	//PersonI
+	PersonI
 	VehicleRepository
 	GetDb() *gorm.DB
 }

@@ -69,3 +69,31 @@ func VehicleOwners(persons []*psql.Person) *models.InlineKeyboardMarkup {
 	}
 	return kb
 }
+func GetPersonsVehicles(vehicles []*psql.Vehicle) *models.InlineKeyboardMarkup {
+
+	kb := &models.InlineKeyboardMarkup{
+		InlineKeyboard: [][]models.InlineKeyboardButton{
+			{
+				{Text: "Модель", CallbackData: "pass"},
+				{Text: "Номер", CallbackData: "pass"},
+				{Text: "Категория", CallbackData: "pass"},
+			},
+		},
+	}
+	for _, vehicle := range vehicles {
+		res := []models.InlineKeyboardButton{
+
+			{
+				Text: vehicle.Model, CallbackData: "pass",
+			},
+			{
+				Text: vehicle.Pts, CallbackData: "pass",
+			},
+			{
+				Text: vehicle.Category, CallbackData: "pass",
+			},
+		}
+		kb.InlineKeyboard = append(kb.InlineKeyboard, res)
+	}
+	return kb
+}

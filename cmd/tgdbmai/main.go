@@ -2,8 +2,8 @@ package main
 
 import (
 	"TgDbMai/config"
+	handlers "TgDbMai/internal/handlers"
 	"TgDbMai/internal/psql"
-	"TgDbMai/internal/query_handlers"
 	"TgDbMai/internal/service"
 	"TgDbMai/internal/step_handlers"
 
@@ -55,7 +55,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	query_handlers.New(bot, stepH)
+	handlers.New(bot, stepH)
 	bot.Start(ctx)
 
 }

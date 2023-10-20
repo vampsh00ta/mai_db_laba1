@@ -21,6 +21,10 @@ func NewMain(bot *tgbotapi.Bot, handler *BotHandler) {
 		keyboard.GaiCommand,
 		tgbotapi.MatchTypeExact,
 		main.Gai())
+	bot.RegisterHandler(tgbotapi.HandlerTypeMessageText,
+		keyboard.SpravkiCommand,
+		tgbotapi.MatchTypeExact,
+		main.Spravki())
 }
 
 //func NewMain(bot *tgbotapi.Bot){
@@ -41,7 +45,7 @@ func (g Main) Gaishnik() tgbotapi.HandlerFunc {
 		g.back.name = keyboard.MainСommand
 		b.SendMessage(ctx, &tgbotapi.SendMessageParams{
 			ChatID:      update.Message.Chat.ID,
-			Text:        "Меню действий сотрудника ГИБДД",
+			Text:        keyboard.GaishnikCommand,
 			ReplyMarkup: keyboard.Gaishnik(),
 		})
 	}
@@ -52,8 +56,19 @@ func (g Main) Gai() tgbotapi.HandlerFunc {
 		g.back.name = keyboard.MainСommand
 		b.SendMessage(ctx, &tgbotapi.SendMessageParams{
 			ChatID:      update.Message.Chat.ID,
-			Text:        "Меню действий диспетчера ГИБДД",
+			Text:        keyboard.GaiCommand,
 			ReplyMarkup: keyboard.Gai(),
+		})
+	}
+}
+func (g Main) Spravki() tgbotapi.HandlerFunc {
+	return func(ctx context.Context, b *tgbotapi.Bot, update *models.Update) {
+		g.back.keyboard = keyboard.Main()
+		g.back.name = keyboard.MainСommand
+		b.SendMessage(ctx, &tgbotapi.SendMessageParams{
+			ChatID:      update.Message.Chat.ID,
+			Text:        keyboard.SpravkiCommand,
+			ReplyMarkup: keyboard.Spravki(),
 		})
 	}
 }
