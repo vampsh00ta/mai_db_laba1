@@ -12,11 +12,11 @@ const (
 const (
 	AddParticipantDtpCommand = "Добавить участника дтп"
 	CheckVehicleCommand      = "Проверить автомобиль"
+	ExitCommand              = "Выйти"
 	BackCommand              = "Назад"
 )
 
 func Gaishnik() *models.ReplyKeyboardMarkup {
-
 	kb := &models.ReplyKeyboardMarkup{
 		Keyboard: [][]models.KeyboardButton{
 			{
@@ -25,9 +25,9 @@ func Gaishnik() *models.ReplyKeyboardMarkup {
 			{
 				{Text: CheckVehicleCommand},
 			},
-			//{
-			//	{Text: "Выписать штраф", CallbackData: "gaishnik_"+string(CheckVehicle)},
-			//},
+			{
+				{Text: ExitCommand},
+			},
 			{
 				{Text: BackCommand},
 			},

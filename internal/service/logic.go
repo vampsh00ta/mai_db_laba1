@@ -1,20 +1,20 @@
 package service
 
 import (
-	"TgDbMai/internal/psql"
+	rep "TgDbMai/internal/repository"
 	"errors"
 )
 
 type Service interface {
-	RegDtp(dtp *psql.Dtp) (int, error)
-	VehicleDpts(pts string) ([]*psql.Dtp, error)
-	AddDtpDescription(dtpId int, text string) (*psql.DtpDescription, error)
-	GetVehicleByPts(pts string) (*psql.Vehicle, error)
-	GetVehicleOwners(pts string) ([]*psql.Person, error)
+	RegDtp(dtp *rep.Dtp) (int, error)
+	VehicleDpts(pts string) ([]*rep.Dtp, error)
+	AddDtpDescription(dtpId int, text string) (*rep.DtpDescription, error)
+	GetVehicleByPts(pts string) (*rep.Vehicle, error)
+	GetVehicleOwners(pts string) ([]*rep.Person, error)
 	Spravki
 }
 
-func (s service) RegDtp(dtp *psql.Dtp) (int, error) {
+func (s service) RegDtp(dtp *rep.Dtp) (int, error) {
 	tx := s.rep.GetDb().Begin()
 	defer tx.Commit()
 	dtp, err := s.rep.AddDtp(tx, dtp.Coords, dtp.Street, dtp.Area, dtp.Metro, dtp.Category)
@@ -27,7 +27,7 @@ func (s service) RegDtp(dtp *psql.Dtp) (int, error) {
 	}
 	return dtp.Id, nil
 }
-func (s service) VehicleDpts(pts string) ([]*psql.Dtp, error) {
+func (s service) VehicleDpts(pts string) ([]*rep.Dtp, error) {
 	tx := s.rep.GetDb().Begin()
 	defer tx.Commit()
 	dpts, err := s.rep.GetVehicleDptsByPts(tx, pts)
@@ -41,7 +41,7 @@ func (s service) VehicleDpts(pts string) ([]*psql.Dtp, error) {
 
 }
 
-func (s service) AddDtpDescription(id int, text string) (*psql.DtpDescription, error) {
+func (s service) AddDtpDescription(id int, text string) (*rep.DtpDescription, error) {
 	tx := s.rep.GetDb().Begin()
 	defer tx.Commit()
 	dtpDescription, err := s.rep.AddDtpDescription(tx, id, text)
@@ -54,7 +54,7 @@ func (s service) AddDtpDescription(id int, text string) (*psql.DtpDescription, e
 	return dtpDescription, nil
 }
 
-func (s service) GetVehicleByPts(pts string) (*psql.Vehicle, error) {
+func (s service) GetVehicleByPts(pts string) (*rep.Vehicle, error) {
 	tx := s.rep.GetDb().Begin()
 	defer tx.Commit()
 	vehicle, err := s.rep.GetVehicleByPts(tx, pts)
@@ -66,7 +66,7 @@ func (s service) GetVehicleByPts(pts string) (*psql.Vehicle, error) {
 	}
 	return vehicle, nil
 }
-func (s service) GetVehicleOwners(pts string) ([]*psql.Person, error) {
+func (s service) GetVehicleOwners(pts string) ([]*rep.Person, error) {
 	tx := s.rep.GetDb().Begin()
 	defer tx.Commit()
 	persons, err := s.rep.GetVehicleOwners(tx, pts)

@@ -10,8 +10,7 @@ const (
 	_
 )
 const (
-	DtpHappenCommand  = "Случилось дтп"
-	RegVehicleCommand = "Зарегистрировать автомобиль"
+	DtpHappenCommand = "Случилось дтп"
 )
 
 func Gai() *models.ReplyKeyboardMarkup {

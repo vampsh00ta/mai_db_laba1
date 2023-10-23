@@ -1,39 +1,66 @@
 package config
 
 import (
-	"errors"
-	"github.com/ilyakaznacheev/cleanenv"
+	"fmt"
+	"github.com/joho/godotenv"
+	"gopkg.in/yaml.v3"
 	"os"
 )
 
-type Config struct {
-	Tg `json:"tg" yaml:"tg"`
-	Db `json:"db" yaml:"db"`
-}
-type Tg struct {
-	ApiToken string ` json:"apitoken "yaml:"apitoken" env-default:"apitoken"`
-}
-type Db struct {
-	Username string `yaml:"username" env-default:"postgres"`
-	Password string `yaml:"password" env-default:"postgres"`
-	Host     string `yaml:"host" env-default:"localhost"`
-	Port     string `yaml:"port" env-default:"5432"`
-	Name     string `yaml:"name" env-default:"postgres"`
-}
-
-func Load() (*Config, error) {
-	configPath := "/Users/vladislavtrofimov/GolandProjects/TgDbMai/config/config.yaml"
-	if configPath == "" {
-		return nil, errors.New("CONFIG_PATH is not set")
+type (
+	// Config -.
+	Config struct {
+		App `yaml:"app"`
+		Log `yaml:"logger"`
+		PG  `yaml:"postgres"`
+		Tg  `yaml:"tg"`
 	}
-	if _, err := os.Stat(configPath); os.IsNotExist(err) {
-		return nil, errors.New("config file does not exist")
-
+	Tg struct {
+		Apitoken string `env-required:"true" yaml:"apitoken"    env:"API_TOKEN"`
 	}
-	var cfg Config
-
-	if err := cleanenv.ReadConfig(configPath, &cfg); err != nil {
-		return nil, errors.New("cannot read config file")
+	App struct {
+		Name    string `env-required:"true" yaml:"name"    env:"APP_NAME"`
+		Version string `env-required:"true" yaml:"version" env:"APP_VERSION"`
 	}
-	return &cfg, nil
+
+	Log struct {
+		Level string `env-required:"true" yaml:"log_level"   env:"LOG_LEVEL"`
+	}
+
+	PG struct {
+		PoolMax  int    `env-required:"true" yaml:"pool_max" env:"PG_POOL_MAX"`
+		Username string `env-required:"true" yaml:"username" env-default:"postgres"`
+		Password string `env-required:"true" yaml:"password" env-default:"postgres"`
+		Host     string `env-required:"true" yaml:"host" env-default:"localhost"`
+		Port     string `env-required:"true" yaml:"port" env-default:"5432"`
+		Name     string `env-required:"true" yaml:"name" env-default:"postgres"`
+	}
+)
+
+func New() (*Config, error) {
+	err := godotenv.Load(".env")
+	if err != nil {
+		return nil, err
+	}
+	currPath, err := os.Getwd()
+	if err != nil {
+		return nil, err
+	}
+	filePath := currPath + os.Getenv("path") + "/" + os.Getenv("env") + ".yml"
+	fmt.Println(filePath)
+	file, err := os.Open(filePath)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	d := yaml.NewDecoder(file)
+	var cfg *Config
+
+	if err := d.Decode(&cfg); err != nil {
+		return nil, err
+	}
+
+	return cfg, nil
+
 }

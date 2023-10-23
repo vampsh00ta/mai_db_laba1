@@ -25,6 +25,14 @@ func NewMain(bot *tgbotapi.Bot, handler *BotHandler) {
 		keyboard.SpravkiCommand,
 		tgbotapi.MatchTypeExact,
 		main.Spravki())
+	bot.RegisterHandler(tgbotapi.HandlerTypeMessageText,
+		keyboard.MasterDataCommand,
+		tgbotapi.MatchTypeExact,
+		main.MasterData())
+	bot.RegisterHandler(tgbotapi.HandlerTypeMessageText,
+		keyboard.ExitCommand,
+		tgbotapi.MatchTypeExact,
+		main.Exit())
 }
 
 //func NewMain(bot *tgbotapi.Bot){
@@ -39,15 +47,26 @@ func NewMain(bot *tgbotapi.Bot, handler *BotHandler) {
 //		main.Gai())
 //}
 
-func (g Main) Gaishnik() tgbotapi.HandlerFunc {
+func (g *Main) Gaishnik() tgbotapi.HandlerFunc {
 	return func(ctx context.Context, b *tgbotapi.Bot, update *models.Update) {
 		g.back.keyboard = keyboard.Main()
 		g.back.name = keyboard.MainСommand
-		b.SendMessage(ctx, &tgbotapi.SendMessageParams{
-			ChatID:      update.Message.Chat.ID,
-			Text:        keyboard.GaishnikCommand,
-			ReplyMarkup: keyboard.Gaishnik(),
-		})
+		me, err := b.GetMe(ctx)
+		if err != nil {
+			return
+		}
+		logged := g.step.Auth.IsLogged(me.ID)
+
+		if !logged {
+			g.step.Login(ctx, b, update)
+		} else {
+			b.SendMessage(ctx, &tgbotapi.SendMessageParams{
+				ChatID:      update.Message.Chat.ID,
+				Text:        keyboard.GaishnikCommand,
+				ReplyMarkup: keyboard.Gaishnik(),
+			})
+		}
+
 	}
 }
 func (g Main) Gai() tgbotapi.HandlerFunc {
@@ -69,6 +88,27 @@ func (g Main) Spravki() tgbotapi.HandlerFunc {
 			ChatID:      update.Message.Chat.ID,
 			Text:        keyboard.SpravkiCommand,
 			ReplyMarkup: keyboard.Spravki(),
+		})
+	}
+}
+func (g Main) MasterData() tgbotapi.HandlerFunc {
+	return func(ctx context.Context, b *tgbotapi.Bot, update *models.Update) {
+		g.back.keyboard = keyboard.Main()
+		g.back.name = keyboard.MainСommand
+		b.SendMessage(ctx, &tgbotapi.SendMessageParams{
+			ChatID:      update.Message.Chat.ID,
+			Text:        keyboard.MasterDataCommand,
+			ReplyMarkup: keyboard.MasterData(),
+		})
+	}
+}
+func (g Main) Exit() tgbotapi.HandlerFunc {
+	return func(ctx context.Context, b *tgbotapi.Bot, update *models.Update) {
+		g.step.Logout(ctx, b, update)
+		b.SendMessage(ctx, &tgbotapi.SendMessageParams{
+			ChatID:      update.Message.Chat.ID,
+			Text:        keyboard.MainСommand,
+			ReplyMarkup: keyboard.Main(),
 		})
 	}
 }

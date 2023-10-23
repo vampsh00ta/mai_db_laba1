@@ -47,6 +47,7 @@ type Crew struct {
 	Gai              *Gai           `gorm:"foreignKey:gai_id;references:id"`
 	Dtps             []*Dtp         `gorm:"many2many:crew_dtp;"`
 	Time             time.Time      `gorm:"many2many:crew_dtp;default:current_timestamp"`
+	Duty             bool
 }
 
 func (Crew) TableName() string {
@@ -59,15 +60,15 @@ type Gai struct {
 	Metro string `json:"metro" db:"metro"`
 }
 type Dtp struct {
-	Id           int       `json:"id" db:"id,omitempty" gorm:"primaryKey"`
-	Coords       string    `json:"coords" db:"coords"`
-	Date         time.Time `json:"date" db:"date" gorm:"column:date"`
-	Street       string    `json:"street" db:"street"`
-	Area         string    `json:"area" db:"area"`
-	Metro        string    `json:"metro" db:"metro"`
-	Category     string    `json:"category" db:"category"`
-	Crews        []*Crew   `gorm:"many2many:crew_dtp"`
-	Participants []*ParticipantOfDtp
+	Id           int                 `json:"id" db:"id,omitempty" gorm:"primaryKey"`
+	Coords       string              `json:"coords" db:"coords"`
+	Date         time.Time           `json:"date" db:"date" gorm:"column:date"`
+	Street       string              `json:"street" db:"street"`
+	Area         string              `json:"area" db:"area"`
+	Metro        string              `json:"metro" db:"metro"`
+	Category     string              `json:"category" db:"category"`
+	Crews        []*Crew             `gorm:"many2many:crew_dtp"`
+	Participants []*ParticipantOfDtp `gorm:"foreignKey:DtpId;references:Id"`
 }
 
 func (Dtp) TableName() string {

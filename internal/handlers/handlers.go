@@ -19,6 +19,7 @@ func New(bot *tgbotapi.Bot, step *step_handlers.StepHandler) {
 	NewMain(bot, botHandler)
 	NewGaishnik(bot, botHandler)
 	NewGai(bot, botHandler)
+	NewMasterData(bot, botHandler)
 	NewCheckVehicle(bot, botHandler)
 	NewSpravki(bot, botHandler)
 	bot.RegisterHandler(tgbotapi.HandlerTypeMessageText,

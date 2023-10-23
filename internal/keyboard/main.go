@@ -10,10 +10,11 @@ const (
 )
 
 const (
-	GaiCommand      = "ГАИ"
-	GaishnikCommand = "Сотрудник ГИБДД"
-	MainСommand     = "Главное меню"
-	SpravkiCommand  = "Справки"
+	GaiCommand        = "ГАИ"
+	GaishnikCommand   = "Сотрудник ГИБДД"
+	MainСommand       = "Главное меню"
+	SpravkiCommand    = "Справки"
+	MasterDataCommand = "Master Data"
 )
 
 func Main() *models.ReplyKeyboardMarkup {
@@ -27,6 +28,9 @@ func Main() *models.ReplyKeyboardMarkup {
 			},
 			{
 				{Text: SpravkiCommand},
+			},
+			{
+				{Text: MasterDataCommand},
 			},
 		},
 	}

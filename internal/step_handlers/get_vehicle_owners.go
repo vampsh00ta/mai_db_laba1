@@ -28,12 +28,7 @@ func (sh StepHandler) checkVehicleOwnersResult(ctx context.Context, bot *tgbotap
 			Text:   fmt.Sprintf("Что-то пошло не так"),
 		})
 	}
-	//_, err = bot.SendDocument(ctx, &tgbotapi.SendDocumentParams{
-	//	ChatID:      update.Message.Chat.ID,
-	//	Document:       models.InputFileUpload{
-	//		Data:dtps_file,
-	//	},
-	//})
+
 	_, err = bot.SendMessage(ctx, &tgbotapi.SendMessageParams{
 		ChatID:      update.Message.Chat.ID,
 		Text:        "Владельцы автомобиля",

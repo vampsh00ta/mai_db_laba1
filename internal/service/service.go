@@ -1,13 +1,15 @@
 package service
 
 import (
-	"TgDbMai/internal/psql"
+	rep "TgDbMai/internal/repository"
 )
 
 type service struct {
-	rep psql.Repository
+	rep rep.Repository
 }
 
-func New(r psql.Repository) Service {
-	return &service{r}
+func New(r rep.Repository) Service {
+	return &service{
+		rep: r,
+	}
 }

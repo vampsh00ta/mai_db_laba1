@@ -9,8 +9,10 @@ const (
 	GetPersonInfoCommand          = "Вывести данные человека"
 	GetOfficersInfoCommand        = "ВЫвести данные сотрудника ГИБДД"
 	DtpActionsCommand             = "Дтп"
-	GetDtpsInfoNearMetroCommand   = "Вывести ДТП, произошедшие у конкретного метро"
+	GetDtpsInfoNearAreaCommand    = "Вывести ДТП, произошедшие в конкретном районе"
 	GetDtpsInfoRadiusMetroCommand = "Вывести ДТП, произошедшие в n радиуса от метро"
+	ByPassportCommand             = "По паспорту"
+	ByFIOCommand                  = "По ФИО"
 )
 
 func Spravki() *models.ReplyKeyboardMarkup {
@@ -29,10 +31,27 @@ func Spravki() *models.ReplyKeyboardMarkup {
 				{Text: GetOfficersInfoCommand},
 			},
 			{
-				{Text: GetDtpsInfoNearMetroCommand},
+				{Text: GetDtpsInfoNearAreaCommand},
 			},
 			{
 				{Text: GetDtpsInfoRadiusMetroCommand},
+			},
+			{
+				{Text: BackCommand},
+			},
+		},
+	}
+	return kb
+}
+
+func GetPersonInfo() *models.ReplyKeyboardMarkup {
+
+	kb := &models.ReplyKeyboardMarkup{
+		Keyboard: [][]models.KeyboardButton{
+			{
+				{Text: ByPassportCommand},
+			}, {
+				{Text: ByFIOCommand},
 			},
 			{
 				{Text: BackCommand},

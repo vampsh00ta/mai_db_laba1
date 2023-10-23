@@ -3,19 +3,18 @@ package main
 import (
 	"TgDbMai/config"
 	handlers "TgDbMai/internal/handlers"
-	"TgDbMai/internal/psql"
+	repository "TgDbMai/internal/repository"
 	"TgDbMai/internal/service"
+	authentication "TgDbMai/internal/service/auth"
 	"TgDbMai/internal/step_handlers"
-
-	tgbotapi "github.com/go-telegram/bot"
-	"github.com/go-telegram/bot/models"
-
+	log "TgDbMai/pkg/logger"
 	"context"
 	"fmt"
-	"golang.org/x/exp/slog"
+	tgbotapi "github.com/go-telegram/bot"
+	"github.com/go-telegram/bot/models"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
+	gormlog "gorm.io/gorm/logger"
 	"os"
 	"os/signal"
 )
@@ -23,35 +22,40 @@ import (
 func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
-	cfg, err := config.Load()
+	cfg, err := config.New()
 	if err != nil {
 		panic(err)
 	}
 	dsn := fmt.Sprintf(
 		"host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=Europe/Moscow",
-		cfg.Db.Host,
-		cfg.Db.Username,
-		cfg.Db.Password,
-		cfg.Db.Name,
-		cfg.Db.Port)
+		cfg.PG.Host,
+		cfg.PG.Username,
+		cfg.PG.Password,
+		cfg.PG.Name,
+		cfg.PG.Port)
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
-		Logger: logger.Default.LogMode(logger.Info),
+		Logger: gormlog.Default.LogMode(gormlog.Info),
 	})
 	if err != nil {
 		panic(err)
 	}
-	var logger *slog.Logger
 	if err != nil {
 		panic(err)
 	}
-	rep := psql.New(db, logger)
+	rep := repository.New(db)
+	//tx := rep.GetDb()
+	//res, err := rep.GetOfficersCrewByOfficerId(tx, 1)
+	//fmt.Println(res[0].PoliceOfficer1, err)
+	auth := &authentication.Auth{DB: make(map[int64]*authentication.User)}
 	srvc := service.New(rep)
-	stepH := step_handlers.New(srvc)
+	logger := log.New(cfg.Level)
+	stepH := step_handlers.New(srvc, logger, auth)
 	opts := []tgbotapi.Option{
 		tgbotapi.WithDefaultHandler(handler),
+		tgbotapi.WithMiddlewares(auth.AuthMiddleware()),
 	}
 
-	bot, err := tgbotapi.New(cfg.ApiToken, opts...)
+	bot, err := tgbotapi.New(cfg.Apitoken, opts...)
 	if err != nil {
 		panic(err)
 	}

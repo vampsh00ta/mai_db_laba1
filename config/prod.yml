@@ -1,0 +1,19 @@
+clean:
+  name: 'clean'
+  version: '1.0.0'
+
+tg:
+  apitoken: "6684907037:AAHSDb2JAlcLDiAacbAMUSQAKbMFHYOtCMk"
+
+logger:
+  log_level: 'debug'
+  rollbar_env: 'clean'
+
+postgres:
+  username: "maidtp"
+  password: "maidtp"
+  host: "localhost"
+  port: "5432"
+  name: "maidtp"
+  pool_max: 10
+

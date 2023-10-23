@@ -14,6 +14,8 @@ type DtpRepository interface {
 	AddDtpDescription(tx *gorm.DB, dtpId int, text string) (*DtpDescription, error)
 	GetDtpByIdCars(tx *gorm.DB, dtpId int) ([]*Vehicle, error)
 	AddParticipant(tx *gorm.DB, lawNumber string, dtpId int, pts, role string, personData Person) (*ParticipantOfDtp, error)
+	GetPoliceOfficerDtpsById(tx *gorm.DB, id int) ([]*Dtp, error)
+	GetDtpByArea(tx *gorm.DB, area string) ([]*Dtp, error)
 	//select id from violation  where law_number = ?;
 	//select  id  from person where name  = ? and surname  = ? and  patronymic = ? and passport = ?;
 	//insert into participant_of_dtp (violation_id,vehicle_id , person_id , dtp_id , role)
@@ -109,7 +111,6 @@ func (db Db) AddParticipant(tx *gorm.DB, lawNumber string, dtpId int, pts, role 
 	err = tx.Model(&violation).
 		Where("law_number = ?", lawNumber).
 		Find(&violation).Error
-	fmt.Println(violation.Law)
 	if err != nil {
 		description := fmt.Sprintf("repository:AddParticipant: %s", err.Error())
 		return nil, errors.New(description)
@@ -144,4 +145,34 @@ func (db Db) AddParticipant(tx *gorm.DB, lawNumber string, dtpId int, pts, role 
 		return nil, errors.New(description)
 	}
 	return &participantOfDtp, nil
+}
+
+func (db Db) GetPoliceOfficerDtpsById(tx *gorm.DB, id int) ([]*Dtp, error) {
+	var dtps []*Dtp
+	err := tx.Raw(`
+	select dtp.id , dtp.date from dtp
+	join crew_dtp on crew_dtp.dtp_id = dtp.id
+	join crew on crew.id = crew_dtp.crew_id
+	join (select * from police_officer where id = 1) as police_officer
+	on crew.p_officer_id_1 = police_officer.id or crew.p_officer_id_2 = police_officer.id
+	
+`).
+		Where("id = ?", id).
+		Find(&dtps).Error
+	if err != nil {
+		description := fmt.Sprintf("repository:GetDtpById: %s", err.Error())
+		return nil, errors.New(description)
+	}
+	return dtps, nil
+}
+func (db Db) GetDtpByArea(tx *gorm.DB, area string) ([]*Dtp, error) {
+	var dtps []*Dtp
+	err := tx.Model(&dtps).
+		Where("area = ?", area).
+		Find(&dtps).Error
+	if err != nil {
+		description := fmt.Sprintf("repository:GetDtpById: %s", err.Error())
+		return nil, errors.New(description)
+	}
+	return dtps, nil
 }
