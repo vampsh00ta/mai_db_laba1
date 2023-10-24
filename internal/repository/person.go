@@ -4,7 +4,7 @@ import (
 	"gorm.io/gorm"
 )
 
-type PersonI interface {
+type PersonRepository interface {
 	GetPersonByPts(tx *gorm.DB, name, surname, patronymic, pts string) (*Vehicle, error)
 	GetPersonsVehicles(tx *gorm.DB, name, surname, patronymic string) ([]*Vehicle, error)
 	GetPersonInfoByFIO(tx *gorm.DB, name, surname, patronymic string) ([]*Person, error)
@@ -12,6 +12,7 @@ type PersonI interface {
 	GetOfficersInfoByFIO(tx *gorm.DB, name, surname, patronymic string) (*PoliceOfficer, error)
 	GetOfficersCrewByOfficerId(tx *gorm.DB, id int) ([]*Crew, error)
 	GetOfficersCrewByOfficerFIO(tx *gorm.DB, name, surname, patronymic string) ([]*Crew, error)
+	GetOfficers(tx *gorm.DB, name, surname, patronymic string) ([]*Crew, error)
 
 	GetOfficerByFIO(tx *gorm.DB, name, surname, patronymic string) (*PoliceOfficer, error)
 }
@@ -74,15 +75,15 @@ func (db Db) GetPersonInfoByPassport(tx *gorm.DB, passport int) (*Person, error)
 	return person, nil
 }
 func (db Db) GetOfficersInfoByFIO(tx *gorm.DB, name, surname, patronymic string) (*PoliceOfficer, error) {
-	var officer PoliceOfficer
-	err := tx.Model(&officer).Preload("Person",
-		db.Where("name = ? and surname = ? and patronymic = ?", name, surname, patronymic)).
-		First(&officer).Error
+	var person *Person
+	err := tx.Model(&Person{}).Preload("PoliceOfficer").
+		Where("name = ? and surname = ? and patronymic = ?", name, surname, patronymic).
+		First(&person).Error
 	if err != nil {
 		return nil, Error("GetPersonInfoByFIO", err)
 
 	}
-	return &officer, nil
+	return person.PoliceOfficer, nil
 }
 
 func (db Db) GetOfficersCrewByOfficerId(tx *gorm.DB, id int) ([]*Crew, error) {

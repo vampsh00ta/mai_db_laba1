@@ -5,27 +5,43 @@ import (
 	"errors"
 )
 
-type Service interface {
-	RegDtp(dtp *rep.Dtp) (int, error)
+type Dtp interface {
+	RegDtp(dtp *rep.Dtp, officerCount int) (*rep.Dtp, error)
 	VehicleDpts(pts string) ([]*rep.Dtp, error)
 	AddDtpDescription(dtpId int, text string) (*rep.DtpDescription, error)
 	GetVehicleByPts(pts string) (*rep.Vehicle, error)
 	GetVehicleOwners(pts string) ([]*rep.Person, error)
-	Spravki
 }
 
-func (s service) RegDtp(dtp *rep.Dtp) (int, error) {
+func (s service) RegDtp(dtp *rep.Dtp, officerCount int) (*rep.Dtp, error) {
 	tx := s.rep.GetDb().Begin()
 	defer tx.Commit()
 	dtp, err := s.rep.AddDtp(tx, dtp.Coords, dtp.Street, dtp.Area, dtp.Metro, dtp.Category)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
+	crews, err := s.FindClosedCrews(dtp.Coords)
+	if err != nil {
+		return nil, err
+	}
+	var crewsToCall []*rep.Crew
+	count := 0
+	for i := 0; count < officerCount && i < len(crews); i++ {
+		crewsToCall = append(crewsToCall, crews[i])
+		count += len(crews[i].PoliceOfficers)
+	}
+	dtp.Crews = crews
+	err = tx.Model(&dtp).Association("Crews").Append(&crews)
+	if err != nil {
+		return nil, err
+	}
+
 	if tx.Error != nil {
 		tx.Rollback()
-		return 0, errors.New("transaction error")
+		return nil, errors.New("transaction error")
 	}
-	return dtp.Id, nil
+
+	return dtp, nil
 }
 func (s service) VehicleDpts(pts string) ([]*rep.Dtp, error) {
 	tx := s.rep.GetDb().Begin()

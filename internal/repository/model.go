@@ -38,16 +38,13 @@ func (DtpDescription) TableName() string {
 }
 
 type Crew struct {
-	Id               int            `json:"id" db:"id,omitempty" gorm:"primaryKey"`
-	PoliceOfficerId1 int            `json:"p_officer_id_1" db:"p_officer_id_1" gorm:"index;column:p_officer_id_1" `
-	PoliceOfficerId2 int            `json:"p_officer_id_2" db:"p_officer_id_2" gorm:"index;column:p_officer_id_2"`
-	PoliceOfficer1   *PoliceOfficer `gorm:"foreignKey:PoliceOfficerId1;references:id"`
-	PoliceOfficer2   *PoliceOfficer `gorm:"foreignKey:PoliceOfficerId2;references:id"`
-	Gai_id           int            `json:"gai_id" db:"gai_id" gorm:"index;column:gai_id"`
-	Gai              *Gai           `gorm:"foreignKey:gai_id;references:id"`
-	Dtps             []*Dtp         `gorm:"many2many:crew_dtp;"`
-	Time             time.Time      `gorm:"many2many:crew_dtp;default:current_timestamp"`
-	Duty             bool
+	Id             int              `json:"id" db:"id,omitempty" gorm:"primaryKey"`
+	PoliceOfficers []*PoliceOfficer `gorm:"many2many:crew_po;joinForeignKey:crew_id;joinReferences:po_id;"`
+	Gai_id         int              `json:"gai_id" db:"gai_id" gorm:"index;column:gai_id;"`
+	Gai            *Gai
+	Dtps           []*Dtp    `gorm:"many2many:crew_dtp;"`
+	Time           time.Time `gorm:"default:current_timestamp;"`
+	Duty           bool
 }
 
 func (Crew) TableName() string {
@@ -55,10 +52,17 @@ func (Crew) TableName() string {
 }
 
 type Gai struct {
-	Id    int    `json:"id" db:"id,omitempty" gorm:"primaryKey"`
-	Area  string `json:"area" db:"area"`
-	Metro string `json:"metro" db:"metro"`
+	Id     int     `json:"id" db:"id,omitempty" gorm:"primaryKey"`
+	Area   string  `json:"area" db:"area"`
+	Metro  string  `json:"metro" db:"metro"`
+	Coords string  `json:"coords" db:"coords"`
+	Crews  []*Crew `gorm:"foreignKey:gai_id;references:id"`
 }
+
+func (Gai) TableName() string {
+	return "gai"
+}
+
 type Dtp struct {
 	Id           int                 `json:"id" db:"id,omitempty" gorm:"primaryKey"`
 	Coords       string              `json:"coords" db:"coords"`
@@ -100,9 +104,10 @@ func (Vehicle) TableName() string {
 type PoliceOfficer struct {
 	Id       int     `json:"id" db:"id,omitempty" gorm:"primaryKey"`
 	PersonId int     `gorm:"index"`
-	Person   *Person `gorm:"foreignKey:PersonId;references:id"`
+	Person   *Person `gorm:"foreignKey:PersonId"`
 	Rank     string  `json:"rank" db:"rank"`
 	GaiName  string  `json:"gai_name" db:"gai_name"`
+	Crews    []*Crew `gorm:"many2many:crew_po;joinForeignKey:po_id;joinReferences:crew_id"`
 }
 
 func (PoliceOfficer) TableName() string {
@@ -119,6 +124,7 @@ type Person struct {
 	Citizenship       string     `json:"citizenship" db:"citizenship"`
 	Vehicles          []*Vehicle `gorm:"many2many:person_vehicle;"`
 	ParticipantsOfDtp []*ParticipantOfDtp
+	PoliceOfficer     *PoliceOfficer `gorm:"foreignKey:PersonId;references:id"`
 }
 
 func (Person) TableName() string {

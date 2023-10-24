@@ -3,7 +3,6 @@ package auth
 import (
 	"TgDbMai/internal/keyboard"
 	"context"
-	"fmt"
 	tgbotapi "github.com/go-telegram/bot"
 	"github.com/go-telegram/bot/models"
 )
@@ -18,31 +17,43 @@ type Auth struct {
 	DB map[int64]*User
 }
 type User struct {
-	Id          int
+	personId    int
 	accessLevel int
 }
 
-func (auth *Auth) LogIn(userTgId int64, userId int, accessLvl int) {
-	auth.DB[userTgId] = &User{Id: userId, accessLevel: accessLvl}
+func (auth *Auth) LogIn(chatid int64, userId, accessLvl int) {
+	auth.DB[chatid] = &User{personId: userId, accessLevel: accessLvl}
 
 }
-func (auth *Auth) LogOut(userTgId int64) {
+func (auth *Auth) LogOut(chatid int64) {
 
-	delete(auth.DB, userTgId)
+	delete(auth.DB, chatid)
 }
 
-func (auth *Auth) IsLogged(userTgId int64) bool {
-	_, ok := auth.DB[userTgId]
-	fmt.Println("daun")
+func (auth *Auth) IsLogged(chatid int64) bool {
+	_, ok := auth.DB[chatid]
 
-	fmt.Println(ok)
 	return ok
 }
-func (auth *Auth) GetUser(userTgId int64) *User {
-	return auth.DB[userTgId]
+func (auth *Auth) GetUser(chatid int64) *User {
+	return auth.DB[chatid]
 }
-func (auth *Auth) GetAccess(userTgId int64) int {
-	return auth.DB[userTgId].accessLevel
+func (auth *Auth) GetAccess(chatid int64) int {
+	return auth.DB[chatid].accessLevel
+}
+func (auth *Auth) GetTgIdsByPersonId(personId ...int) map[int]int64 {
+	res := make(map[int]int64)
+	for _, id := range personId {
+		res[id] = 0
+	}
+	for tgId, user := range auth.DB {
+		_, ok := res[user.personId]
+		if ok {
+			res[user.personId] = tgId
+		}
+
+	}
+	return res
 }
 
 func (auth *Auth) AuthMiddleware(privateCommand ...string) func(next tgbotapi.HandlerFunc) tgbotapi.HandlerFunc {

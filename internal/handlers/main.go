@@ -51,11 +51,12 @@ func (g *Main) Gaishnik() tgbotapi.HandlerFunc {
 	return func(ctx context.Context, b *tgbotapi.Bot, update *models.Update) {
 		g.back.keyboard = keyboard.Main()
 		g.back.name = keyboard.MainСommand
-		me, err := b.GetMe(ctx)
-		if err != nil {
-			return
-		}
-		logged := g.step.Auth.IsLogged(me.ID)
+		//me, err := b.GetMe(ctx)
+
+		//if err != nil {
+		//	return
+		//}
+		logged := g.step.Auth.IsLogged(update.Message.Chat.ID)
 
 		if !logged {
 			g.step.Login(ctx, b, update)

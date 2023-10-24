@@ -34,16 +34,15 @@ func (sh StepHandler) loginResult(ctx context.Context, bot *tgbotapi.Bot, update
 	}
 	result := ""
 	if officer != nil {
-		me, err := bot.GetMe(ctx)
 		if err != nil {
 			bot.SendMessage(ctx, &tgbotapi.SendMessageParams{
 				ChatID: update.Message.Chat.ID,
 				Text:   fmt.Sprintf("Что-то пошло не так"),
 			})
 		}
-		userTgId := me.ID
+		//userTgId := me.ID
 
-		sh.Auth.LogIn(userTgId, officer.PersonId, 2)
+		sh.Auth.LogIn(update.Message.Chat.ID, officer.PersonId, 2)
 		result = "Вы успешно авторизириовались"
 
 	} else {
@@ -58,7 +57,12 @@ func (sh StepHandler) loginResult(ctx context.Context, bot *tgbotapi.Bot, update
 }
 
 func (sh StepHandler) Logout(ctx context.Context, bot *tgbotapi.Bot, update *models.Update) {
-	me, err := bot.GetMe(ctx)
+
+	sh.Auth.LogOut(update.Message.Chat.ID)
+	_, err := bot.SendMessage(ctx, &tgbotapi.SendMessageParams{
+		ChatID: update.Message.Chat.ID,
+		Text:   fmt.Sprintf("Вы успешно вышли из аккаунта"),
+	})
 	if err != nil {
 		bot.SendMessage(ctx, &tgbotapi.SendMessageParams{
 			ChatID: update.Message.Chat.ID,
@@ -66,11 +70,5 @@ func (sh StepHandler) Logout(ctx context.Context, bot *tgbotapi.Bot, update *mod
 		})
 		return
 	}
-	userTgId := me.ID
-	sh.Auth.LogOut(userTgId)
-	bot.SendMessage(ctx, &tgbotapi.SendMessageParams{
-		ChatID: update.Message.Chat.ID,
-		Text:   fmt.Sprintf("Вы успешно вышли из аккаунта"),
-	})
 
 }

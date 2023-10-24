@@ -156,18 +156,22 @@ CREATE TABLE dtp_description (
 
 
 CREATE TABLE crew_dtp (
-      dtp_id integer  REFERENCES dtp (id),
-      crew_id integer  REFERENCES crew (id)
-                      );
+    dtp_id integer  REFERENCES dtp (id),
+    crew_id integer  REFERENCES crew (id)
+                  );
 
+CREATE TABLE crew_po (
+    po_id integer  REFERENCES police_officer (id),
+    crew_id integer  REFERENCES crew (id)
+);
 CREATE TABLE participant_of_dtp (
-                                    id serial primary key ,
-                                    violation_id integer REFERENCES violation (id),
-                                    vehicle_id integer  REFERENCES vehicle (id),
-                                    person_id integer  REFERENCES person (id),
-                                    dtp_id integer    REFERENCES dtp (id),
-                                    role varchar(255)
-                                );
+    id serial primary key ,
+    violation_id integer REFERENCES violation (id),
+    vehicle_id integer  REFERENCES vehicle (id),
+    person_id integer  REFERENCES person (id),
+    dtp_id integer    REFERENCES dtp (id),
+    role varchar(255)
+    );
 
 
 

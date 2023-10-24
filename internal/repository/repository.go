@@ -8,13 +8,19 @@ import (
 
 type Repository interface {
 	DtpRepository
-	PersonI
+	PersonRepository
+	CrewRepository
 	VehicleRepository
 	GetDb() *gorm.DB
 }
 
 type Db struct {
 	*gorm.DB
+}
+
+func (db Db) GetOfficers(tx *gorm.DB, name, surname, patronymic string) ([]*Crew, error) {
+	//TODO implement me
+	panic("implement me")
 }
 
 func (db Db) GetOfficersCrewByOfficerFIO(tx *gorm.DB, name, surname, patronymic string) ([]*Crew, error) {

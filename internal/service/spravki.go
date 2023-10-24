@@ -113,17 +113,17 @@ func (s service) GetOfficersInfo(fio string) (*rep.PoliceOfficer, []*rep.Dtp, er
 	//}
 	////officer.Crew = crews
 
-	dtps, err := s.rep.GetPoliceOfficerDtpsById(tx, officer.Id)
-	if err != nil {
-		return nil, nil, err
-	}
+	//dtps, err := s.rep.GetPoliceOfficerDtpsById(tx, officer.Id)
+	//if err != nil {
+	//	return nil, nil, err
+	//}
 
 	if tx.Error != nil {
 		tx.Rollback()
 		return nil, nil, errors.New("transaction error")
 	}
 
-	return officer, dtps, nil
+	return officer, nil, nil
 
 }
 
