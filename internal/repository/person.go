@@ -131,11 +131,10 @@ func (db Db) GetFines(tx *gorm.DB, passport int) (*Person, error) {
 	err := tx.
 		Model(&person).
 		Preload("Fine").
-		Find(&person).
-		Where("passport = ?", passport).
+		Find(&person, tx.Where("passport = ?", passport)).
 		Error
 	if err != nil {
-		return nil, Error("GetOfficersCrewByOfficerId", err)
+		return nil, Error("GetFines", err)
 
 	}
 	return person, nil

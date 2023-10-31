@@ -258,12 +258,12 @@ func GetFines(fines []*rep.Fine) *models.InlineKeyboardMarkup {
 				{Text: "Дата", CallbackData: "pass"},
 				{Text: "Причина", CallbackData: "pass"},
 
-				{Text: "Оплачен", CallbackData: "pass"},
+				{Text: "Статус", CallbackData: "pass"},
 			},
 		},
 	}
 	timeToBool := func(b time.Time) string {
-		if b.String() != "" {
+		if b.Year() == 1 {
 			return "Не оплачен"
 		}
 		return "Оплачен"
@@ -276,7 +276,7 @@ func GetFines(fines []*rep.Fine) *models.InlineKeyboardMarkup {
 			},
 
 			{
-				Text: fine.Date.String(), CallbackData: "pass",
+				Text: fine.Date.String()[0:10], CallbackData: "pass",
 			},
 			{
 				Text: fine.Reason, CallbackData: "pass",
