@@ -8,7 +8,7 @@ import (
 )
 
 type Spravki struct {
-	handler *BotHandler
+	*BotHandler
 }
 
 // IsPersonOwnerCommand      = "Проверить,принадлежит авто человеку"
@@ -55,7 +55,7 @@ func NewSpravki(bot *tgbotapi.Bot, handler *BotHandler) {
 }
 func (s Spravki) IsPersonOwner() tgbotapi.HandlerFunc {
 	return func(ctx context.Context, bot *tgbotapi.Bot, update *models.Update) {
-		s.handler.step.IsPersonOwner(ctx, bot, update)
+		s.step.IsPersonOwner(ctx, bot, update)
 
 	}
 }
@@ -63,13 +63,16 @@ func (s Spravki) IsPersonOwner() tgbotapi.HandlerFunc {
 // добабив вывод дтп, в которых был автомобиль
 func (s Spravki) GetPersonsVehicles() tgbotapi.HandlerFunc {
 	return func(ctx context.Context, bot *tgbotapi.Bot, update *models.Update) {
-		s.handler.step.GetPersonsVehicles(ctx, bot, update)
+		s.step.GetPersonsVehicles(ctx, bot, update)
 	}
 }
 func (s Spravki) GetPersonInfo() tgbotapi.HandlerFunc {
 	return func(ctx context.Context, bot *tgbotapi.Bot, update *models.Update) {
-		s.handler.back.keyboard = keyboard.Spravki()
-		s.handler.back.name = keyboard.SpravkiCommand
+		s.back.Set(update.Message.Chat.ID,
+			&Back{name: keyboard.SpravkiCommand,
+				keyboard: keyboard.Spravki(),
+			},
+		)
 
 		bot.SendMessage(ctx, &tgbotapi.SendMessageParams{
 			ChatID:      update.Message.Chat.ID,
@@ -80,24 +83,24 @@ func (s Spravki) GetPersonInfo() tgbotapi.HandlerFunc {
 }
 func (s Spravki) GetPersonInfoFIO() tgbotapi.HandlerFunc {
 	return func(ctx context.Context, bot *tgbotapi.Bot, update *models.Update) {
-		s.handler.step.GetPersonInfoFIO(ctx, bot, update)
+		s.step.GetPersonInfoFIO(ctx, bot, update)
 	}
 }
 func (s Spravki) GetPersonInfoPassport() tgbotapi.HandlerFunc {
 	return func(ctx context.Context, bot *tgbotapi.Bot, update *models.Update) {
-		s.handler.step.GetPersonInfoPassport(ctx, bot, update)
+		s.step.GetPersonInfoPassport(ctx, bot, update)
 	}
 }
 
 func (s Spravki) GetOfficersInfoCommand() tgbotapi.HandlerFunc {
 	return func(ctx context.Context, bot *tgbotapi.Bot, update *models.Update) {
-		s.handler.step.GetOfficersInfo(ctx, bot, update)
+		s.step.GetOfficersInfo(ctx, bot, update)
 
 	}
 }
 func (s Spravki) GetDtpsInfoNearMetro() tgbotapi.HandlerFunc {
 	return func(ctx context.Context, bot *tgbotapi.Bot, update *models.Update) {
-		s.handler.step.GetDtpsInfoNearArea(ctx, bot, update)
+		s.step.GetDtpsInfoNearArea(ctx, bot, update)
 	}
 }
 func (s Spravki) GetDtpsInfoRadiusMetro() tgbotapi.HandlerFunc {

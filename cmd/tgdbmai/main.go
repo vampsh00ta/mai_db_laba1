@@ -43,7 +43,12 @@ func main() {
 		panic(err)
 	}
 	rep := repository.New(db)
+	//tx := rep.GetDb()
+	//a, err := rep.GetCurrentDtpByPersonId(tx, 5)
+	//fmt.Println(a, err)
 	auth := &authentication.Auth{DB: make(map[int64]*authentication.User)}
+	auth.LogIn(564764193, 5, 2)
+
 	srvc := service.New(rep)
 
 	logger := log.New(cfg.Level)

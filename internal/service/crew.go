@@ -2,7 +2,6 @@ package service
 
 import (
 	psql "TgDbMai/internal/repository"
-	"errors"
 	"github.com/umahmood/haversine"
 	"sort"
 	"strconv"
@@ -11,6 +10,7 @@ import (
 
 type CrewI interface {
 	FindClosedCrews(coords string) ([]*psql.Crew, error)
+	SetDutyCrews(duty bool, crew_id ...int) ([]*psql.Crew, error)
 }
 
 type _toSort struct {
@@ -22,17 +22,15 @@ func (s service) FindClosedCrews(coords string) ([]*psql.Crew, error) {
 	lat, err := strconv.ParseFloat(splited[0], 64)
 	lon, err := strconv.ParseFloat(splited[1], 64)
 	if err != nil {
+
 		return nil, err
 	}
 	tx := s.rep.GetDb().Begin()
 	defer tx.Commit()
 	crews, err := s.rep.GetAllCrews(tx)
-	if err != nil {
-		return nil, err
-	}
-	if tx.Error != nil {
+	if err != nil || tx.Error != nil {
 		tx.Rollback()
-		return nil, errors.New("transaction error")
+		return nil, err
 	}
 	dtpCoord := haversine.Coord{Lat: lat, Lon: lon} // Oxford, UK
 	var toSort []_toSort
@@ -58,4 +56,15 @@ func (s service) FindClosedCrews(coords string) ([]*psql.Crew, error) {
 	})
 
 	return result, nil
+}
+func (s service) SetDutyCrews(duty bool, crewIds ...int) ([]*psql.Crew, error) {
+	tx := s.rep.GetDb().Begin()
+	defer tx.Commit()
+	crews, err := s.rep.SetDutyCrews(tx, duty, crewIds...)
+	if err != nil || tx.Error != nil {
+		tx.Rollback()
+		return nil, err
+	}
+
+	return crews, nil
 }

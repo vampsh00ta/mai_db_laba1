@@ -234,7 +234,7 @@ func (sh StepHandler) getOfficersResult(ctx context.Context, bot *tgbotapi.Bot, 
 	_, err = bot.SendMessage(ctx, &tgbotapi.SendMessageParams{
 		ChatID:      update.Message.Chat.ID,
 		Text:        "Дтп сотрудника",
-		ReplyMarkup: response.VehicleDpts(dtps),
+		ReplyMarkup: response.Dpts(dtps),
 	})
 	if err != nil {
 		sh.log.Error(err.Error())
@@ -281,7 +281,7 @@ func (sh StepHandler) getDtpsInfoNearAreaResult(ctx context.Context, bot *tgbota
 	_, err = bot.SendMessage(ctx, &tgbotapi.SendMessageParams{
 		ChatID:      update.Message.Chat.ID,
 		Text:        "Дтп",
-		ReplyMarkup: response.VehicleDpts(dtps),
+		ReplyMarkup: response.Dpts(dtps),
 	})
 	if err != nil {
 		sh.log.Error(err.Error())

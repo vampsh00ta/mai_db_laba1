@@ -9,6 +9,7 @@ import (
 type Repository interface {
 	DtpRepository
 	PersonRepository
+	DescriptionRepository
 	CrewRepository
 	VehicleRepository
 	GetDb() *gorm.DB
@@ -16,21 +17,6 @@ type Repository interface {
 
 type Db struct {
 	*gorm.DB
-}
-
-func (db Db) GetOfficers(tx *gorm.DB, name, surname, patronymic string) ([]*Crew, error) {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (db Db) GetOfficersCrewByOfficerFIO(tx *gorm.DB, name, surname, patronymic string) ([]*Crew, error) {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (db Db) GetOfficerByFIO(tx *gorm.DB, name, surname, patronymic string) (*PoliceOfficer, error) {
-	//TODO implement me
-	panic("implement me")
 }
 
 func (db Db) GetDb() *gorm.DB {

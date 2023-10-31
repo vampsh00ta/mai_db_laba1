@@ -17,12 +17,13 @@ type Auth struct {
 	DB map[int64]*User
 }
 type User struct {
-	personId    int
+	PersonId    int
+	OfficerId   int
 	accessLevel int
 }
 
 func (auth *Auth) LogIn(chatid int64, userId, accessLvl int) {
-	auth.DB[chatid] = &User{personId: userId, accessLevel: accessLvl}
+	auth.DB[chatid] = &User{PersonId: userId, accessLevel: accessLvl}
 
 }
 func (auth *Auth) LogOut(chatid int64) {
@@ -47,9 +48,9 @@ func (auth *Auth) GetTgIdsByPersonId(personId ...int) map[int]int64 {
 		res[id] = 0
 	}
 	for tgId, user := range auth.DB {
-		_, ok := res[user.personId]
+		_, ok := res[user.PersonId]
 		if ok {
-			res[user.personId] = tgId
+			res[user.PersonId] = tgId
 		}
 
 	}

@@ -4,18 +4,18 @@ import (
 	"errors"
 	"fmt"
 	"gorm.io/gorm"
-	"time"
 )
 
 type DtpRepository interface {
 	GetAllDtps(tx *gorm.DB) ([]*Dtp, error)
 	GetDtpById(tx *gorm.DB, id int) (*Dtp, error)
 	AddDtp(tx *gorm.DB, coords, street, area, metro, category string) (*Dtp, error)
-	AddDtpDescription(tx *gorm.DB, dtpId int, text string) (*DtpDescription, error)
 	GetDtpByIdCars(tx *gorm.DB, dtpId int) ([]*Vehicle, error)
-	AddParticipant(tx *gorm.DB, lawNumber string, dtpId int, pts, role string, personData Person) (*ParticipantOfDtp, error)
+	AddParticipant(tx *gorm.DB, dtpId int, pts string, passport int, role string, lawNumber *string) (*ParticipantOfDtp, error)
 	GetPoliceOfficerDtpsById(tx *gorm.DB, id int) ([]*Dtp, error)
 	GetDtpByArea(tx *gorm.DB, area string) ([]*Dtp, error)
+	GetCurrentDtpByPersonId(tx *gorm.DB, id int) (*Dtp, error)
+	CloseDtp(tx *gorm.DB, id int) error
 	//select id from violation  where law_number = ?;
 	//select  id  from person where name  = ? and surname  = ? and  patronymic = ? and passport = ?;
 	//insert into participant_of_dtp (violation_id,vehicle_id , person_id , dtp_id , role)
@@ -57,28 +57,7 @@ func (db Db) GetDtpById(tx *gorm.DB, id int) (*Dtp, error) {
 	}
 	return &dtp, nil
 }
-func (db Db) AddDtpDescription(tx *gorm.DB, dtpId int, text string) (*DtpDescription, error) {
-	var dtp Dtp
-	err := tx.Model(&dtp).
-		Where("id = ?", dtpId).
-		Find(&dtp).Error
-	if err != nil {
-		description := fmt.Sprintf("repository:AddDtpDescription: %s", err.Error())
-		return nil, errors.New(description)
-	}
-	var dtpDescription DtpDescription
-	dtpDescription = DtpDescription{
-		Time:  time.Now(),
-		Text:  text,
-		DtpId: dtpId,
-	}
-	err = tx.Model(&dtpDescription).Create(&dtpDescription).Error
-	if err != nil {
-		description := fmt.Sprintf("repository:AddDtpDescription: %s", err.Error())
-		return nil, errors.New(description)
-	}
-	return &dtpDescription, nil
-}
+
 func (db Db) GetDtpByIdCars(tx *gorm.DB, dtpId int) ([]*Vehicle, error) {
 	var vehicles []*Vehicle
 
@@ -95,19 +74,13 @@ func (db Db) GetDtpByIdCars(tx *gorm.DB, dtpId int) ([]*Vehicle, error) {
 	}
 	return vehicles, nil
 }
-func (db Db) AddParticipant(tx *gorm.DB, lawNumber string, dtpId int, pts, role string, personData Person) (*ParticipantOfDtp, error) {
+func (db Db) AddParticipant(tx *gorm.DB, dtpId int, pts string, passport int, role string, lawNumber *string) (*ParticipantOfDtp, error) {
 	var err error
-
-	var dtp Dtp
-	err = tx.Model(&dtp).
-		Where("id = ?", dtpId).
-		Find(&dtp).Error
 	if err != nil {
 		description := fmt.Sprintf("repository:AddParticipant: %s", err.Error())
 		return nil, errors.New(description)
 	}
-
-	var violation Violation
+	var violation *Violation
 	err = tx.Model(&violation).
 		Where("law_number = ?", lawNumber).
 		Find(&violation).Error
@@ -117,8 +90,8 @@ func (db Db) AddParticipant(tx *gorm.DB, lawNumber string, dtpId int, pts, role 
 	}
 	var person Person
 	err = tx.Model(&person).
-		Where("name  = ? and surname  = ? and  patronymic = ? and passport = ?",
-			personData.Name, personData.Surname, personData.Patronymic, personData.Passport).
+		Where("passport = ?",
+			passport).
 		Find(&person).Error
 	if err != nil {
 		description := fmt.Sprintf("repository:AddParticipant: %s", err.Error())
@@ -130,21 +103,19 @@ func (db Db) AddParticipant(tx *gorm.DB, lawNumber string, dtpId int, pts, role 
 		description := fmt.Sprintf("repository:AddParticipant: %s", err.Error())
 		return nil, errors.New(description)
 	}
-
-	participantOfDtp := ParticipantOfDtp{
+	participant := &ParticipantOfDtp{
 		DtpId:       dtpId,
 		ViolationId: violation.Id,
 		PersonId:    person.Id,
 		VehicleId:   vehicle.Id,
 		Role:        role,
 	}
-
-	err = tx.Model(&participantOfDtp).Create(&participantOfDtp).Error
+	err = tx.Model(&participant).Create(&participant).Error
 	if err != nil {
 		description := fmt.Sprintf("repository:AddParticipant: %s", err.Error())
 		return nil, errors.New(description)
 	}
-	return &participantOfDtp, nil
+	return participant, nil
 }
 
 func (db Db) GetPoliceOfficerDtpsById(tx *gorm.DB, id int) ([]*Dtp, error) {
@@ -160,7 +131,7 @@ func (db Db) GetPoliceOfficerDtpsById(tx *gorm.DB, id int) ([]*Dtp, error) {
 		Where("id = ?", id).
 		Find(&dtps).Error
 	if err != nil {
-		description := fmt.Sprintf("repository:GetDtpById: %s", err.Error())
+		description := fmt.Sprintf("repository:GetPoliceOfficerDtpsById: %s", err.Error())
 		return nil, errors.New(description)
 	}
 	return dtps, nil
@@ -171,8 +142,51 @@ func (db Db) GetDtpByArea(tx *gorm.DB, area string) ([]*Dtp, error) {
 		Where("area = ?", area).
 		Find(&dtps).Error
 	if err != nil {
-		description := fmt.Sprintf("repository:GetDtpById: %s", err.Error())
+		description := fmt.Sprintf("repository:GetDtpByArea: %s", err.Error())
 		return nil, errors.New(description)
 	}
 	return dtps, nil
 }
+
+func (db Db) GetCurrentDtpByPersonId(tx *gorm.DB, id int) (*Dtp, error) {
+	var dtp *Dtp
+	//err := tx.Model(&dtp).
+	//	Preload("Crews", db.Where("crew.duty = true")).
+	//	Preload("Crews.PoliceOfficer", db.Where("police_officer.person_id = ?", id)).
+	//	//Preload("DtpDescriptions", db.Where("text <> ?", ClosedDtp)).
+	//	Find(&dtp).Error
+	res := tx.Raw(`
+		select dtp.id,dtp.coords,dtp.category,dtp.date from dtp 
+	join crew_dtp on crew_dtp.dtp_id = dtp.id
+	join (select * from crew where duty = true) as crew on crew.id = crew_dtp.crew_id
+	join crew_po on crew_po.crew_id = crew.id
+	join (select * from police_officer where person_id = ?) as police_officer on police_officer.id  = crew_po.po_id
+	join (select dtp_id,text from dtp_description where ? != dtp_description.text ) as dtp_description on dtp_description.dtp_id = dtp.id
+	order by dtp.id desc limit 1
+`, id, ClosedDtp).
+		Find(&dtp)
+	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
+		return nil, nil
+	}
+	err := res.Error
+	if err != nil {
+		description := fmt.Sprintf("repository:GetCurrentDtpByPersonId: %s", err.Error())
+		return nil, errors.New(description)
+	}
+	return dtp, nil
+}
+func (db Db) CloseDtp(tx *gorm.DB, id int) error {
+	err := tx.Raw(`
+	update crew set duty = false where crew.id in (
+	    select crew.id from (select * from crew_dtp where dtp_id = ?) as crew_dtp join crew on crew.id = crew_dtp.crew_id
+
+	)
+`, id).Find(&DtpDescription{}).Error
+	if err != nil {
+		description := fmt.Sprintf("repository:CloseDtp: %s", err.Error())
+		return errors.New(description)
+	}
+	return nil
+}
+
+//select crew.id from (select * from crew_dtp where dtp_id = 55) as crew_dtp join crew on crew.id = crew_dtp.crew_id

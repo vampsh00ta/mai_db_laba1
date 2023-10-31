@@ -38,6 +38,6 @@ func (sh StepHandler) checkVehicleResult(ctx context.Context, bot *tgbotapi.Bot,
 	_, err = bot.SendMessage(ctx, &tgbotapi.SendMessageParams{
 		ChatID:      update.Message.Chat.ID,
 		Text:        "Дтп,в которых учавствовал автомобиль",
-		ReplyMarkup: response.VehicleDpts(dtps),
+		ReplyMarkup: response.Dpts(dtps),
 	})
 }

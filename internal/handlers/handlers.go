@@ -10,11 +10,11 @@ import (
 
 type BotHandler struct {
 	step *step_handlers.StepHandler
-	back *Back
+	back *BackSession
 }
 
 func New(bot *tgbotapi.Bot, step *step_handlers.StepHandler) {
-	back := &Back{name: "", keyboard: nil}
+	back := &BackSession{user: make(map[int64]*Back)}
 	botHandler := &BotHandler{step, back}
 	NewMain(bot, botHandler)
 	NewGaishnik(bot, botHandler)

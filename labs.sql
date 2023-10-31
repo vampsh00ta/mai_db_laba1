@@ -8,6 +8,30 @@ begin;
     insert into  dtp_description(text, time,dtp_id) values('были вызваны сотрудники дтп',now(),?);
     insert into crew_dtp (dtp_id,crew_id) values(?,?);
 commit;
+/*получить автомобили дтп по номерам*/
+begin;
+    select dtp.id,dtp.date,dtp.category
+    from (select * from vehicle where pts in `+inPts+` as vehicle
+            join person_vehicle on vehicle.id = person_vehicle.vehicle_id
+        join person on person.id = person_vehicle.person_id
+        join participant_of_dtp on participant_of_dtp.person_id = person.id
+        join dtp on dtp.id = participant_of_dtp.dtp_id
+commit
+/*изменить занятость взводов*/
+begin;
+    update crew set duty = ? where id in (?)
+
+commit;
+/*последнее дополнение по дтп*/
+begin;
+    select * from dtp_description where dtp_id = ? order by time desc
+commit;
+
+/*получить автомобили дтп по номерам*/
+begin;
+    select * from crewl
+commit;
+
 
 /*какие та дополнения по дтп*/
 begin;
@@ -25,6 +49,13 @@ begin;
     join person_vehicle on person_vehicle.vehicle_id = v.id
     join (select  *  from person where name  = 'ya' and surname  = 'ya' and  patronymic = 'ya' and passport = 11111) as p on  p.id = person_vehicle.person_id
 commit;
+
+/*все участники дтп*/
+begin;
+
+select *   from (select * from dtp where id = 65 ) as d
+                    join participant_of_dtp on  participant_of_dtp.dtp_id = d.id
+    commit;
 
 /*машины задействованные в дтп*/
 begin;
@@ -44,7 +75,10 @@ insert into person (name, surname, patronymic, birthday, passport, citizenship)
 values ('asd','asd','asd',now(),1111,'asd')
 returning id;
 commit;
-
+/*выписать штраф*/
+begin;
+insert into  fine (person_id,date,amount,reason) values  ((select id from person where passport  = ? limit 1) ,now(),?,?)
+commit;
 /*добавить сотрудника дпс*/
 begin;
 insert into police_officer (rank, person_id)

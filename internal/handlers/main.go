@@ -49,13 +49,13 @@ func NewMain(bot *tgbotapi.Bot, handler *BotHandler) {
 
 func (g *Main) Gaishnik() tgbotapi.HandlerFunc {
 	return func(ctx context.Context, b *tgbotapi.Bot, update *models.Update) {
-		g.back.keyboard = keyboard.Main()
-		g.back.name = keyboard.MainСommand
-		//me, err := b.GetMe(ctx)
+		g.back.Set(update.Message.Chat.ID,
+			&Back{
+				name:     keyboard.MainСommand,
+				keyboard: keyboard.Main(),
+			},
+		)
 
-		//if err != nil {
-		//	return
-		//}
 		logged := g.step.Auth.IsLogged(update.Message.Chat.ID)
 
 		if !logged {
@@ -70,10 +70,14 @@ func (g *Main) Gaishnik() tgbotapi.HandlerFunc {
 
 	}
 }
-func (g Main) Gai() tgbotapi.HandlerFunc {
+func (g *Main) Gai() tgbotapi.HandlerFunc {
 	return func(ctx context.Context, b *tgbotapi.Bot, update *models.Update) {
-		g.back.keyboard = keyboard.Main()
-		g.back.name = keyboard.MainСommand
+		g.back.Set(update.Message.Chat.ID,
+			&Back{
+				name:     keyboard.MainСommand,
+				keyboard: keyboard.Main(),
+			},
+		)
 		b.SendMessage(ctx, &tgbotapi.SendMessageParams{
 			ChatID:      update.Message.Chat.ID,
 			Text:        keyboard.GaiCommand,
@@ -83,8 +87,12 @@ func (g Main) Gai() tgbotapi.HandlerFunc {
 }
 func (g Main) Spravki() tgbotapi.HandlerFunc {
 	return func(ctx context.Context, b *tgbotapi.Bot, update *models.Update) {
-		g.back.keyboard = keyboard.Main()
-		g.back.name = keyboard.MainСommand
+		g.back.Set(update.Message.Chat.ID,
+			&Back{
+				name:     keyboard.MainСommand,
+				keyboard: keyboard.Main(),
+			},
+		)
 		b.SendMessage(ctx, &tgbotapi.SendMessageParams{
 			ChatID:      update.Message.Chat.ID,
 			Text:        keyboard.SpravkiCommand,
@@ -94,8 +102,12 @@ func (g Main) Spravki() tgbotapi.HandlerFunc {
 }
 func (g Main) MasterData() tgbotapi.HandlerFunc {
 	return func(ctx context.Context, b *tgbotapi.Bot, update *models.Update) {
-		g.back.keyboard = keyboard.Main()
-		g.back.name = keyboard.MainСommand
+		g.back.Set(update.Message.Chat.ID,
+			&Back{
+				name:     keyboard.MainСommand,
+				keyboard: keyboard.Main(),
+			},
+		)
 		b.SendMessage(ctx, &tgbotapi.SendMessageParams{
 			ChatID:      update.Message.Chat.ID,
 			Text:        keyboard.MasterDataCommand,

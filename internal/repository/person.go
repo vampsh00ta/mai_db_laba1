@@ -11,10 +11,9 @@ type PersonRepository interface {
 	GetPersonInfoByPassport(tx *gorm.DB, passport int) (*Person, error)
 	GetOfficersInfoByFIO(tx *gorm.DB, name, surname, patronymic string) (*PoliceOfficer, error)
 	GetOfficersCrewByOfficerId(tx *gorm.DB, id int) ([]*Crew, error)
-	GetOfficersCrewByOfficerFIO(tx *gorm.DB, name, surname, patronymic string) ([]*Crew, error)
-	GetOfficers(tx *gorm.DB, name, surname, patronymic string) ([]*Crew, error)
-
-	GetOfficerByFIO(tx *gorm.DB, name, surname, patronymic string) (*PoliceOfficer, error)
+	GetOfficersInfoByPersonId(tx *gorm.DB, id int) (*Person, error)
+	IssueFine(tx *gorm.DB, passport int, amount int, reason string) (*Person, error)
+	GetFines(tx *gorm.DB, passport int) (*Person, error)
 }
 
 func (db Db) GetPersonByPts(tx *gorm.DB, name, surname, patronymic, pts string) (*Vehicle, error) {
@@ -98,6 +97,48 @@ func (db Db) GetOfficersCrewByOfficerId(tx *gorm.DB, id int) ([]*Crew, error) {
 
 	}
 	return crews, nil
+}
+func (db Db) GetOfficersInfoByPersonId(tx *gorm.DB, id int) (*Person, error) {
+	var person *Person
+	err := tx.
+		Model(&Person{}).
+		Preload("PoliceOfficer.Crews.Dtps").
+		Where("id = ?", id).
+		Find(&person).Error
+	if err != nil {
+		return nil, Error("GetOfficersCrewByOfficerId", err)
+
+	}
+	return person, nil
+}
+func (db Db) IssueFine(tx *gorm.DB, passport int, amount int, reason string) (*Person, error) {
+	var person *Person
+	err := tx.
+		Raw(`
+
+		insert into  fine (person_id,date,amount,reason) values  ((select id from person where passport  = ? limit 1) ,now(),?,?) 
+		
+	`, passport, amount, reason).Find(&person).
+		Error
+	if err != nil {
+		return nil, Error("GetOfficersCrewByOfficerId", err)
+
+	}
+	return person, nil
+}
+func (db Db) GetFines(tx *gorm.DB, passport int) (*Person, error) {
+	var person *Person
+	err := tx.
+		Model(&person).
+		Preload("Fine").
+		Find(&person).
+		Where("passport = ?", passport).
+		Error
+	if err != nil {
+		return nil, Error("GetOfficersCrewByOfficerId", err)
+
+	}
+	return person, nil
 }
 
 //	func (db Db) GetOfficerByFIO(tx *gorm.DB, name, surname, patronymic string) (*PoliceOfficer, error) {
