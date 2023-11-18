@@ -27,28 +27,15 @@ func NewCheckVehicle(bot *tgbotapi.Bot, handler *BotHandler) {
 		checkVehicle.VehicleInfoByPts())
 }
 
-// {
-// {Text: VehicleDtpsCommand},
-// }, {
-// {Text: VehicleOwnerCommand},
-// },
-// {
-// {Text: VehicleInfoByPtsCommand},
-// },
 func (g CheckVehicle) VehicleDtps() tgbotapi.HandlerFunc {
 	return func(ctx context.Context, bot *tgbotapi.Bot, update *models.Update) {
-		bot.SendMessage(ctx, &tgbotapi.SendMessageParams{
-			ChatID: update.Message.Chat.ID,
-			Text:   keyboard.VehicleDtpsCommand,
-		})
+		g.step.VehicleDtps(ctx, bot, update)
 	}
 }
 func (g CheckVehicle) VehicleInfoByPts() tgbotapi.HandlerFunc {
 	return func(ctx context.Context, bot *tgbotapi.Bot, update *models.Update) {
-		bot.SendMessage(ctx, &tgbotapi.SendMessageParams{
-			ChatID: update.Message.Chat.ID,
-			Text:   keyboard.VehicleInfoByPtsCommand,
-		})
+		g.step.VehicleInfo(ctx, bot, update)
+
 	}
 }
 func (g CheckVehicle) VehicleOwner() tgbotapi.HandlerFunc {

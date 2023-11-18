@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-type CrewI interface {
+type Crew interface {
 	FindClosedCrews(coords string) ([]*psql.Crew, error)
 	SetDutyCrews(duty bool, crew_id ...int) ([]*psql.Crew, error)
 }
@@ -21,17 +21,20 @@ func (s service) FindClosedCrews(coords string) ([]*psql.Crew, error) {
 	splited := strings.Split(coords, ",")
 	lat, err := strconv.ParseFloat(splited[0], 64)
 	lon, err := strconv.ParseFloat(splited[1], 64)
+
 	if err != nil {
 
 		return nil, err
 	}
-	tx := s.rep.GetDb().Begin()
+	tx := s.rep.GetDb()
+
 	defer tx.Commit()
 	crews, err := s.rep.GetAllCrews(tx)
 	if err != nil || tx.Error != nil {
 		tx.Rollback()
 		return nil, err
 	}
+
 	dtpCoord := haversine.Coord{Lat: lat, Lon: lon} // Oxford, UK
 	var toSort []_toSort
 	var result []*psql.Crew

@@ -13,11 +13,11 @@ type DescriptionRepository interface {
 }
 
 const (
-	CallCops         = "Вызваны сотрудники"
+	CallCops         = "Зарегестрировано"
 	TestOfAlcDrugs   = "Проверили  на алкоголь/наркотики"
 	DoneProtocol     = "Написали протоколы"
 	HandOverToPolice = "Передали дело сотрудникам полиции"
-	ClosedDtp        = "Дело закрыто"
+	ClosedDtp        = "Завершено"
 )
 
 func (db Db) AddDescriptionToDtp(tx *gorm.DB, dtpId int, text string) (*DtpDescription, error) {
@@ -35,6 +35,7 @@ func (db Db) AddDescriptionToDtp(tx *gorm.DB, dtpId int, text string) (*DtpDescr
 		Text:  text,
 		DtpId: dtpId,
 	}
+	fmt.Println(dtpDescription)
 	err = tx.Model(&dtpDescription).Create(&dtpDescription).Error
 	if err != nil {
 		description := fmt.Sprintf("repository:AddDtpDescription: %s", err.Error())

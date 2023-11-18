@@ -38,18 +38,19 @@ func NewGaishnik(bot *tgbotapi.Bot, handler *BotHandler) {
 		keyboard.CheckFinesCommand,
 		tgbotapi.MatchTypeExact,
 		gaishnik.CheckFines())
+	bot.RegisterHandler(tgbotapi.HandlerTypeMessageText,
+		keyboard.IsPersonOwnerCommand,
+		tgbotapi.MatchTypeExact,
+		gaishnik.CheckVehicleOwner())
 }
 
-//	func (g Gaishnik) CheckVehicleOwner() tgbotapi.HandlerFunc {
-//		return func(ctx context.Context, b *tgbotapi.Bot, update *models.Update) {
-//			b.SendMessage(ctx, &tgbotapi.SendMessageParams{
-//				ChatID: update.Message.Chat.ID,
-//				Text:   keyboard.VehicleOwnerCommand,
-//			})
-//
-//		}
-//
-// }
+func (g Gaishnik) CheckVehicleOwner() tgbotapi.HandlerFunc {
+	return func(ctx context.Context, b *tgbotapi.Bot, update *models.Update) {
+		g.step.IsPersonOwner(ctx, b, update)
+
+	}
+
+}
 func (g Gaishnik) IssueFine() tgbotapi.HandlerFunc {
 	return func(ctx context.Context, b *tgbotapi.Bot, update *models.Update) {
 		g.step.IssueFine(ctx, b, update)

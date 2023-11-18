@@ -6,8 +6,10 @@ import (
 
 type Service interface {
 	Dtp
-	Spravki
-	CrewI
+	Crew
+	Person
+	Fine
+	Vehicle
 }
 type service struct {
 	rep rep.Repository

@@ -13,7 +13,17 @@ const (
 	Gai
 )
 
-type Auth struct {
+type Auth interface {
+	LogIn(chatid int64, userId, accessLvl int)
+	LogOut(chatid int64)
+	IsLogged(chatid int64) bool
+	GetUser(chatid int64) *User
+	GetAccess(chatid int64) int
+	GetTgIdsByPersonId(personId ...int) map[int]int64
+	AuthMiddleware(privateCommand ...string) func(next tgbotapi.HandlerFunc) tgbotapi.HandlerFunc
+}
+
+type AuthMap struct {
 	DB map[int64]*User
 }
 type User struct {
@@ -22,27 +32,27 @@ type User struct {
 	accessLevel int
 }
 
-func (auth *Auth) LogIn(chatid int64, userId, accessLvl int) {
+func (auth *AuthMap) LogIn(chatid int64, userId, accessLvl int) {
 	auth.DB[chatid] = &User{PersonId: userId, accessLevel: accessLvl}
 
 }
-func (auth *Auth) LogOut(chatid int64) {
+func (auth *AuthMap) LogOut(chatid int64) {
 
 	delete(auth.DB, chatid)
 }
 
-func (auth *Auth) IsLogged(chatid int64) bool {
+func (auth *AuthMap) IsLogged(chatid int64) bool {
 	_, ok := auth.DB[chatid]
 
 	return ok
 }
-func (auth *Auth) GetUser(chatid int64) *User {
+func (auth *AuthMap) GetUser(chatid int64) *User {
 	return auth.DB[chatid]
 }
-func (auth *Auth) GetAccess(chatid int64) int {
+func (auth *AuthMap) GetAccess(chatid int64) int {
 	return auth.DB[chatid].accessLevel
 }
-func (auth *Auth) GetTgIdsByPersonId(personId ...int) map[int]int64 {
+func (auth *AuthMap) GetTgIdsByPersonId(personId ...int) map[int]int64 {
 	res := make(map[int]int64)
 	for _, id := range personId {
 		res[id] = 0
@@ -57,7 +67,7 @@ func (auth *Auth) GetTgIdsByPersonId(personId ...int) map[int]int64 {
 	return res
 }
 
-func (auth *Auth) AuthMiddleware(privateCommand ...string) func(next tgbotapi.HandlerFunc) tgbotapi.HandlerFunc {
+func (auth *AuthMap) AuthMiddleware(privateCommand ...string) func(next tgbotapi.HandlerFunc) tgbotapi.HandlerFunc {
 	allCommands := make(map[string]int)
 
 	allCommands[keyboard.AddParticipantDtpCommand] = Gashnik

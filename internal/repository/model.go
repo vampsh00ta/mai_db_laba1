@@ -2,13 +2,6 @@ package psql
 
 import "time"
 
-//	type Gai struct {
-//		Id         int    `json:"id" db:"id,omitempty"`
-//		Name       string `json:"name" db:"name,"`
-//		License    string `json:"license" db:"license"`
-//		Department string `json:"department" db:"Department"`
-//	}
-
 type ParticipantOfDtp struct {
 	Id          int       `json:"id" db:"id,omitempty" gorm:"primaryKey"`
 	DtpId       int       `json:"dtp_id" db:"dtp_id" gorm:"index"`
@@ -40,7 +33,7 @@ func (DtpDescription) TableName() string {
 
 type Crew struct {
 	Id             int              `json:"id" db:"id,omitempty" gorm:"primaryKey"`
-	PoliceOfficers []*PoliceOfficer `gorm:"many2many:crew_po;joinForeignKey:crew_id;joinReferences:po_id;"`
+	PoliceOfficers []*PoliceOfficer `gorm:"many2many:crew_police_officer;joinForeignKey:crew_id;joinReferences:po_id;"`
 	Gai_id         int              `json:"gai_id" db:"gai_id" gorm:"index;column:gai_id;"`
 	Gai            *Gai
 	Dtps           []*Dtp    `gorm:"many2many:crew_dtp;joinForeignKey:crew_id;joinReferences:dtp_id"`
@@ -104,12 +97,12 @@ func (Vehicle) TableName() string {
 }
 
 type PoliceOfficer struct {
-	Id       int     `json:"id" db:"id,omitempty" gorm:"primaryKey"`
-	PersonId int     `gorm:"index"`
-	Person   *Person `gorm:"foreignKey:PersonId"`
+	Id       int `json:"id" db:"id,omitempty" gorm:"primaryKey"`
+	PersonId int `json:"personId" db:"personId" `
+	Person   *Person
 	Rank     string  `json:"rank" db:"rank"`
 	GaiName  string  `json:"gai_name" db:"gai_name"`
-	Crews    []*Crew `gorm:"many2many:crew_po;joinForeignKey:po_id;joinReferences:crew_id"`
+	Crews    []*Crew `gorm:"many2many:crew_police_officer;joinForeignKey:po_id;joinReferences:crew_id"`
 }
 
 func (PoliceOfficer) TableName() string {
@@ -126,8 +119,8 @@ type Person struct {
 	Citizenship       string     `json:"citizenship" db:"citizenship"`
 	Vehicles          []*Vehicle `gorm:"many2many:person_vehicle;"`
 	ParticipantsOfDtp []*ParticipantOfDtp
-	Fine              []*Fine        `gorm:"foreignKey:PersonId;references:Id"`
-	PoliceOfficer     *PoliceOfficer `gorm:"foreignKey:PersonId;references:id"`
+	Fine              []*Fine          `gorm:"foreignKey:PersonId;references:Id"`
+	PoliceOfficer     []*PoliceOfficer `gorm:"foreignKey:PersonId;references:id"`
 }
 
 func (Person) TableName() string {

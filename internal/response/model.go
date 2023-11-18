@@ -111,7 +111,7 @@ func VehicleOwners(persons []*rep.Person) *models.InlineKeyboardMarkup {
 	}
 	return kb
 }
-func GetPersonsVehicles(vehicles []*rep.Vehicle) *models.InlineKeyboardMarkup {
+func Vehicles(vehicles []*rep.Vehicle) *models.InlineKeyboardMarkup {
 
 	kb := &models.InlineKeyboardMarkup{
 		InlineKeyboard: [][]models.InlineKeyboardButton{
@@ -173,8 +173,7 @@ func GetPersonInfo(persons []*rep.Person) *models.InlineKeyboardMarkup {
 	return kb
 }
 
-func GetOfficerInfo(persons []*rep.PoliceOfficer) *models.InlineKeyboardMarkup {
-	fmt.Println(persons[0].Person)
+func GetOfficerInfo(person *rep.Person) *models.InlineKeyboardMarkup {
 	kb := &models.InlineKeyboardMarkup{
 		InlineKeyboard: [][]models.InlineKeyboardButton{
 			{
@@ -190,27 +189,26 @@ func GetOfficerInfo(persons []*rep.PoliceOfficer) *models.InlineKeyboardMarkup {
 			},
 		},
 	}
-	for _, person := range persons {
-		res := []models.InlineKeyboardButton{
 
-			{
-				Text: person.Person.Name, CallbackData: "pass",
-			},
-			{
-				Text: person.Person.Surname, CallbackData: "pass",
-			},
-			{
-				Text: person.Person.Patronymic, CallbackData: "pass",
-			},
-			{
-				Text: person.Rank, CallbackData: "pass",
-			},
-			{
-				Text: strconv.Itoa(person.Person.Passport), CallbackData: "pass",
-			},
-		}
-		kb.InlineKeyboard = append(kb.InlineKeyboard, res)
+	res := []models.InlineKeyboardButton{
+
+		{
+			Text: person.Name, CallbackData: "pass",
+		},
+		{
+			Text: person.Surname, CallbackData: "pass",
+		},
+		{
+			Text: person.Patronymic, CallbackData: "pass",
+		},
+		{
+			Text: person.PoliceOfficer[0].Rank, CallbackData: "pass",
+		},
+		{
+			Text: strconv.Itoa(person.Passport), CallbackData: "pass",
+		},
 	}
+	kb.InlineKeyboard = append(kb.InlineKeyboard, res)
 	return kb
 }
 func Сrew(crews []*rep.Crew) *models.InlineKeyboardMarkup {

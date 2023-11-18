@@ -4,19 +4,19 @@ import (
 	rep "TgDbMai/internal/repository"
 	"errors"
 	"fmt"
+	"github.com/umahmood/haversine"
+	"strconv"
+	"strings"
 )
 
 type Dtp interface {
 	RegDtp(dtp *rep.Dtp, officerCount int) (*rep.Dtp, error)
+	GetDtpsInfoNearArea(area string) ([]*rep.Dtp, error)
 	VehicleDpts(pts string) ([]*rep.Dtp, error)
 	AddDescriptionToDtp(dtpId int, text string) (*rep.DtpDescription, error)
-	GetVehicleByPts(pts string) (*rep.Vehicle, error)
-	GetVehicleOwners(pts string) ([]*rep.Person, error)
 	GetCurrentDtp(id int) (*rep.Dtp, error)
+	GetDtpsInfoRadius(radius int, coords string) ([]*rep.Dtp, error)
 	CloseDtp(id int) error
-	AddParticipant(dtpId int, pts string, passport int, role string, lawNumber *string) (*rep.ParticipantOfDtp, error)
-	IssueFine(passport int, amount int, reason string) (*rep.Person, error)
-	GetFines(passport int) (*rep.Person, error)
 }
 
 func (s service) RegDtp(dtp *rep.Dtp, officerCount int) (*rep.Dtp, error) {
@@ -89,25 +89,6 @@ func (s service) AddDescriptionToDtp(id int, text string) (*rep.DtpDescription, 
 	return dtpDescription, nil
 }
 
-func (s service) GetVehicleByPts(pts string) (*rep.Vehicle, error) {
-	tx := s.rep.GetDb().Begin()
-	defer tx.Commit()
-	vehicle, err := s.rep.GetVehicleByPts(tx, pts)
-	if err != nil || tx.Error != nil {
-		return nil, err
-	}
-	return vehicle, nil
-}
-func (s service) GetVehicleOwners(pts string) ([]*rep.Person, error) {
-	tx := s.rep.GetDb().Begin()
-	defer tx.Commit()
-	persons, err := s.rep.GetVehicleOwners(tx, pts)
-	if err != nil || tx.Error != nil {
-		return nil, err
-	}
-	return persons, nil
-}
-
 func (s service) GetCurrentDtp(id int) (*rep.Dtp, error) {
 	tx := s.rep.GetDb().Begin()
 	defer tx.Commit()
@@ -137,35 +118,53 @@ func (s service) CloseDtp(id int) error {
 	}
 	return nil
 }
-func (s service) AddParticipant(dtpId int, pts string, passport int, role string, lawNumber *string) (*rep.ParticipantOfDtp, error) {
+
+func (s service) GetDtpsInfoNearArea(area string) ([]*rep.Dtp, error) {
 	tx := s.rep.GetDb().Begin()
 	defer tx.Commit()
-	parpicipant, err := s.rep.AddParticipant(tx, dtpId, pts, passport, role, lawNumber)
-	if err != nil || tx.Error != nil {
+	dtps, err := s.rep.GetDtpByArea(tx, area)
+	if err != nil {
 		return nil, err
 	}
-	if err != nil || tx.Error != nil {
-		return nil, err
+	if tx.Error != nil {
+		tx.Rollback()
+		return nil, errors.New("transaction error")
 	}
-	return parpicipant, nil
+	return dtps, nil
 }
-func (s service) IssueFine(passport int, amount int, reason string) (*rep.Person, error) {
+func (s service) GetDtpsInfoRadius(radius int, coords string) ([]*rep.Dtp, error) {
 	tx := s.rep.GetDb().Begin()
 	defer tx.Commit()
-	person, err := s.rep.IssueFine(tx, passport, amount, reason)
-	if err != nil || tx.Error != nil {
+	dtps, err := s.rep.GetAllDtps(tx)
+
+	if err != nil {
 		return nil, err
 	}
 
-	return person, nil
-}
-func (s service) GetFines(passport int) (*rep.Person, error) {
-	tx := s.rep.GetDb().Begin()
-	defer tx.Commit()
-	person, err := s.rep.GetFines(tx, passport)
-	if err != nil || tx.Error != nil {
-		return nil, err
-	}
+	splited := strings.Split(coords, ",")
+	lat, err := strconv.ParseFloat(splited[0], 64)
+	lon, err := strconv.ParseFloat(splited[1], 64)
+	searchCoord := haversine.Coord{Lat: lat, Lon: lon} // Oxford, UK
+	result := make([]*rep.Dtp, 0)
+	for _, dtp := range dtps {
 
-	return person, nil
+		splited := strings.Split(dtp.Coords, ",")
+		lat, err := strconv.ParseFloat(splited[0], 64)
+		lon, err := strconv.ParseFloat(splited[1], 64)
+
+		if err != nil {
+			return nil, err
+		}
+		crewCoord := haversine.Coord{Lat: lat, Lon: lon} // Turin, Italy
+		_, km := haversine.Distance(searchCoord, crewCoord)
+		if int(km) < radius {
+			result = append(result, dtp)
+
+		}
+	}
+	if tx.Error != nil {
+		tx.Rollback()
+		return nil, errors.New("transaction error")
+	}
+	return result, nil
 }

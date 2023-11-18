@@ -9,7 +9,7 @@ const (
 	CheckVehicleOwnerKey
 )
 const (
-	VehicleDtpsCommand      = "Дтп,в которых учавствовал автомобиль"
+	VehicleDtpsCommand      = "Дтп,в которых участвовал автомобиль"
 	VehicleOwnerCommand     = "Владелец автомобиля"
 	VehicleInfoByPtsCommand = "Информация автомобиля по его номеру"
 )
@@ -30,5 +30,6 @@ func CheckVehicle() *models.ReplyKeyboardMarkup {
 			},
 		},
 	}
+
 	return kb
 }

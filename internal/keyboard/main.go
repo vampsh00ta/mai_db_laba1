@@ -5,11 +5,6 @@ import (
 )
 
 const (
-	GaiKey = iota
-	GaishnikKey
-)
-
-const (
 	GaiCommand        = "ГАИ"
 	GaishnikCommand   = "Сотрудник ГИБДД"
 	MainСommand       = "Главное меню"
@@ -18,19 +13,12 @@ const (
 )
 
 func Main() *models.ReplyKeyboardMarkup {
-
 	kb := &models.ReplyKeyboardMarkup{
 		Keyboard: [][]models.KeyboardButton{
 			{
 				{Text: GaiCommand},
 			}, {
 				{Text: GaishnikCommand},
-			},
-			{
-				{Text: SpravkiCommand},
-			},
-			{
-				{Text: MasterDataCommand},
 			},
 		},
 	}

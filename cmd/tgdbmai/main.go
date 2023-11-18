@@ -7,6 +7,7 @@ import (
 	"TgDbMai/internal/service"
 	authentication "TgDbMai/internal/service/auth"
 	log "TgDbMai/pkg/logger"
+	"github.com/confluentinc/confluent-kafka-go/kafka"
 
 	"TgDbMai/internal/step_handlers"
 	"context"
@@ -46,13 +47,20 @@ func main() {
 	//tx := rep.GetDb()
 	//a, err := rep.GetCurrentDtpByPersonId(tx, 5)
 	//fmt.Println(a, err)
-	auth := &authentication.Auth{DB: make(map[int64]*authentication.User)}
-	auth.LogIn(564764193, 5, 2)
+	auth := &authentication.AuthMap{DB: make(map[int64]*authentication.User)}
+	auth.LogIn(564764193, 955, 2)
+	producer, err := kafka.NewProducer(&kafka.ConfigMap{
+		"bootstrap.servers": "localhost:9092",
+		"client.id":         "kafka",
+		"acks":              "all"})
+	if err != nil {
+		fmt.Println(err)
+	}
 
 	srvc := service.New(rep)
 
 	logger := log.New(cfg.Level)
-	stepH := step_handlers.New(srvc, logger, auth)
+	stepH := step_handlers.New(srvc, logger, auth, service.NewProducer(producer))
 	opts := []tgbotapi.Option{
 		//tgbotapi.WithMiddlewares(auth.AuthMiddleware()),
 	}

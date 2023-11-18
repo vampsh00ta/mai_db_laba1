@@ -32,6 +32,9 @@ func Gaishnik() *models.ReplyKeyboardMarkup {
 				{Text: CurrentDtpCommand},
 			},
 			{
+				{Text: IsPersonOwnerCommand},
+			},
+			{
 				{Text: AddChangesToDtpCommand},
 			},
 			{
@@ -54,7 +57,6 @@ func Gaishnik() *models.ReplyKeyboardMarkup {
 	}
 	return kb
 }
-
 func DescriptionUpdate() *models.ReplyKeyboardMarkup {
 	kb := &models.ReplyKeyboardMarkup{
 		Keyboard: [][]models.KeyboardButton{

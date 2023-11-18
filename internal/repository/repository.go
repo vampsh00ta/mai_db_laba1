@@ -19,14 +19,14 @@ type Db struct {
 	*gorm.DB
 }
 
-func (db Db) GetDb() *gorm.DB {
-	return db.DB
-}
-
 func New(db *gorm.DB) Repository {
 
 	return &Db{
 		DB: db}
+}
+
+func (db Db) GetDb() *gorm.DB {
+	return db.DB
 }
 
 func Error(funcName string, err error) error {

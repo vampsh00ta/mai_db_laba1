@@ -10,6 +10,11 @@ import (
 	"strconv"
 )
 
+type PtsPerson struct {
+	fio string
+	pts string
+}
+
 func (sh StepHandler) GetCurrentDtp(ctx context.Context, bot *tgbotapi.Bot, update *models.Update) {
 
 	user := sh.Auth.GetUser(update.Message.Chat.ID)
@@ -30,6 +35,8 @@ func (sh StepHandler) GetCurrentDtp(ctx context.Context, bot *tgbotapi.Bot, upda
 		Text:        result,
 		ReplyMarkup: response.CurrentDtp(dtp),
 	})
+	sh.log.Debug("GetCurrentDtp", "status", "good")
+
 }
 
 func (sh StepHandler) AddDtpDescription(ctx context.Context, b *tgbotapi.Bot, update *models.Update) {
@@ -77,6 +84,8 @@ func (sh StepHandler) addDtpDescriptionResult(ctx context.Context, b *tgbotapi.B
 		Text:        result,
 		ReplyMarkup: keyboard.Gaishnik(),
 	})
+	sh.log.Debug("AddDtpDescription", "status", "good")
+
 }
 
 func (sh StepHandler) AddParticipant(ctx context.Context, bot *tgbotapi.Bot, update *models.Update) {
@@ -109,7 +118,6 @@ func (sh StepHandler) addParticipantPassport(ctx context.Context, bot *tgbotapi.
 	bot.RegisterStepHandler(ctx, update, sh.addParticipantVehicle, participant)
 
 }
-
 func (sh StepHandler) addParticipantVehicle(ctx context.Context, bot *tgbotapi.Bot, update *models.Update) {
 
 	data := bot.GetStepData(ctx, update)
@@ -164,6 +172,7 @@ func (sh StepHandler) addParticipantViolation(ctx context.Context, bot *tgbotapi
 		ChatID: update.Message.Chat.ID,
 		Text:   "Участник дтп успешно создан",
 	})
+	sh.log.Debug("AddParticipant", "status", "good")
 
 }
 
@@ -232,6 +241,7 @@ func (sh StepHandler) issueFineReason(ctx context.Context, bot *tgbotapi.Bot, up
 		ChatID: update.Message.Chat.ID,
 		Text:   "Штраф успешно выписан",
 	})
+	sh.log.Debug("IssueFine", "status", "good")
 
 }
 
@@ -265,5 +275,6 @@ func (sh StepHandler) checkFinesPassport(ctx context.Context, bot *tgbotapi.Bot,
 		Text:        "Штраф успешно выписан",
 		ReplyMarkup: response.GetFines(fines),
 	})
+	sh.log.Debug("CheckFines", "status", "good")
 
 }

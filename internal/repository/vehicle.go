@@ -90,8 +90,8 @@ func (db Db) GetVehicleDptsByPts(tx *gorm.DB, pts ...string) ([]*Dtp, error) {
 		ptsAny = append(ptsAny, a)
 	}
 	inPts = inPts[0:len(inPts)-1] + ")"
-	err := tx.Raw(`select dtp.id,dtp.date,dtp.category
-		from (select * from vehicle where pts in `+inPts+` as vehicle
+	err := tx.Raw(`select dtp.id,dtp.category
+		from (select * from vehicle where pts in `+inPts+` )as vehicle
 		join person_vehicle on vehicle.id = person_vehicle.vehicle_id
 		join person on person.id = person_vehicle.person_id 
 		join participant_of_dtp on participant_of_dtp.person_id = person.id

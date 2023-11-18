@@ -16,16 +16,11 @@ type DtpRepository interface {
 	GetDtpByArea(tx *gorm.DB, area string) ([]*Dtp, error)
 	GetCurrentDtpByPersonId(tx *gorm.DB, id int) (*Dtp, error)
 	CloseDtp(tx *gorm.DB, id int) error
-	//select id from violation  where law_number = ?;
-	//select  id  from person where name  = ? and surname  = ? and  patronymic = ? and passport = ?;
-	//insert into participant_of_dtp (violation_id,vehicle_id , person_id , dtp_id , role)
-	//values (?,?,?,?);
-	//DeleteDtp() error
 }
 
 func (db Db) AddDtp(tx *gorm.DB, coords, street, area, metro, category string) (*Dtp, error) {
 	dtp := Dtp{Coords: coords, Street: street, Area: area, Metro: metro, Category: category}
-	result := tx.Select("Coords", "Street", "Area", "Metro", "Category").Create(&dtp)
+	result := tx.Select("Coords", "Street", "Area", "Category").Create(&dtp)
 	if result.Error != nil {
 		description := fmt.Sprintf("repository:AddDtp: %s", result.Error.Error())
 		return nil, errors.New(description)
@@ -124,7 +119,7 @@ func (db Db) GetPoliceOfficerDtpsById(tx *gorm.DB, id int) ([]*Dtp, error) {
 	select dtp.id , dtp.date from dtp
 	join crew_dtp on crew_dtp.dtp_id = dtp.id
 	join crew on crew.id = crew_dtp.crew_id
-	join (select * from police_officer where id = 1) as police_officer
+	join (select * from police_officer where id = ?) as police_officer
 	on crew.p_officer_id_1 = police_officer.id or crew.p_officer_id_2 = police_officer.id
 	
 `).
@@ -138,13 +133,18 @@ func (db Db) GetPoliceOfficerDtpsById(tx *gorm.DB, id int) ([]*Dtp, error) {
 }
 func (db Db) GetDtpByArea(tx *gorm.DB, area string) ([]*Dtp, error) {
 	var dtps []*Dtp
-	err := tx.Model(&dtps).
-		Where("area = ?", area).
+
+	err := tx.Raw(`
+		select dtp.id , dtp_description.time as date,dtp.category from (select * from dtp where area = ?) as dtp
+	    join (select * from dtp_description where text = 'Зарегестрировано') as dtp_description
+		on dtp_description.dtp_id = dtp.id
+		`, area).
 		Find(&dtps).Error
 	if err != nil {
 		description := fmt.Sprintf("repository:GetDtpByArea: %s", err.Error())
 		return nil, errors.New(description)
 	}
+	fmt.Println()
 	return dtps, nil
 }
 
@@ -156,11 +156,11 @@ func (db Db) GetCurrentDtpByPersonId(tx *gorm.DB, id int) (*Dtp, error) {
 	//	//Preload("DtpDescriptions", db.Where("text <> ?", ClosedDtp)).
 	//	Find(&dtp).Error
 	res := tx.Raw(`
-		select dtp.id,dtp.coords,dtp.category,dtp.date from dtp 
+		select dtp.id,dtp.coords,dtp.category,time as date from dtp 
 	join crew_dtp on crew_dtp.dtp_id = dtp.id
 	join (select * from crew where duty = true) as crew on crew.id = crew_dtp.crew_id
-	join crew_po on crew_po.crew_id = crew.id
-	join (select * from police_officer where person_id = ?) as police_officer on police_officer.id  = crew_po.po_id
+	join crew_police_officer on crew_police_officer.crew_id = crew.id
+	join (select * from police_officer where person_id = ?) as police_officer on police_officer.id  = crew_police_officer.po_id
 	join (select dtp_id,text from dtp_description where ? != dtp_description.text ) as dtp_description on dtp_description.dtp_id = dtp.id
 	order by dtp.id desc limit 1
 `, id, ClosedDtp).

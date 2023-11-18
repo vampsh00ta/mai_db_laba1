@@ -42,7 +42,7 @@ func (sh StepHandler) loginResult(ctx context.Context, bot *tgbotapi.Bot, update
 		}
 		//userTgId := me.ID
 
-		sh.Auth.LogIn(update.Message.Chat.ID, officer.PersonId, 2)
+		sh.Auth.LogIn(update.Message.Chat.ID, officer.Id, 2)
 		result = "Вы успешно авторизириовались"
 
 	} else {
@@ -51,7 +51,7 @@ func (sh StepHandler) loginResult(ctx context.Context, bot *tgbotapi.Bot, update
 	bot.SendMessage(ctx, &tgbotapi.SendMessageParams{
 		ChatID:      update.Message.Chat.ID,
 		Text:        result,
-		ReplyMarkup: keyboard.Gaishnik(),
+		ReplyMarkup: keyboard.Gaishnik,
 	})
 
 }
